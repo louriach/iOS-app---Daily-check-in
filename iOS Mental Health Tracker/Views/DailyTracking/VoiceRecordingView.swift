@@ -17,54 +17,55 @@ struct VoiceRecordingView: View {
     var body: some View {
         VStack(spacing: 20) {
             if !hasPermission {
-                Button("Request Microphone Permission") {
+                Button("REQUEST PERMISSION") {
                     Task {
                         hasPermission = await audioService.requestMicrophonePermission()
                     }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(MinimalButtonStyle())
             } else {
                 if audioService.isRecording {
-                    VStack(spacing: 10) {
+                    VStack(spacing: 16) {
                         Image(systemName: "mic.fill")
-                            .font(.system(size: 50))
-                            .foregroundColor(.red)
+                            .font(.system(size: 40))
+                            .foregroundColor(AppTheme.moodRed)
                         
                         Text(String(format: "%.1f", audioService.recordingDuration))
-                            .font(.title2)
-                            .monospacedDigit()
+                            .font(AppTheme.titleFont)
+                            .foregroundColor(AppTheme.primaryTextColor)
                             .onChange(of: audioService.recordingDuration) { oldValue, newValue in
                                 recordingDuration = newValue
                             }
                         
-                        Text("Recording...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Text("RECORDING...")
+                            .font(AppTheme.captionFont)
+                            .foregroundColor(AppTheme.secondaryTextColor)
+                            .tracking(2)
                         
-                        Button("Stop Recording") {
+                        Button("STOP") {
                             audioService.stopRecording()
                             recordingURL = audioService.getRecordingURL()
                             recordingDuration = audioService.recordingDuration
                         }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.red)
+                        .buttonStyle(MinimalButtonStyle())
+                        .foregroundColor(AppTheme.moodRed)
                     }
                 } else {
                     if let url = recordingURL {
-                        VStack(spacing: 10) {
+                        VStack(spacing: 12) {
                             HStack {
                                 Image(systemName: "waveform")
-                                Text("Voice note recorded (\(Int(recordingDuration))s)")
+                                Text("RECORDED (\(Int(recordingDuration))S)")
                             }
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                            .font(AppTheme.captionFont)
+                            .foregroundColor(AppTheme.secondaryTextColor)
                             
-                            Button("Record Again") {
+                            Button("RECORD AGAIN") {
                                 recordingURL = nil
                                 recordingDuration = 0
                                 recordingURL = audioService.startRecording()
                             }
-                            .buttonStyle(.bordered)
+                            .buttonStyle(MinimalButtonStyle())
                         }
                     } else {
                         Button(action: {
@@ -72,14 +73,21 @@ struct VoiceRecordingView: View {
                         }) {
                             HStack {
                                 Image(systemName: "mic.fill")
-                                Text("Record Voice Note")
+                                Text("RECORD")
                             }
-                            .font(.headline)
-                            .foregroundColor(.white)
+                            .font(AppTheme.headlineFont)
+                            .foregroundColor(AppTheme.primaryTextColor)
+                            .tracking(2)
                             .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(AppTheme.surfaceColor)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(AppTheme.borderColor, lineWidth: 1)
+                                    )
+                            )
                         }
                     }
                 }

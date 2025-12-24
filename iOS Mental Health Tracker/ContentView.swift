@@ -37,6 +37,8 @@ struct ContentView: View {
                 }
             }
         }
+        .preferredColorScheme(.dark)
+        .background(AppTheme.backgroundColor)
         .onAppear {
             if notificationSettings.hasCompletedOnboarding {
                 NotificationService.shared.scheduleDailyNotification(at: notificationSettings.notificationTime)

@@ -13,7 +13,7 @@ struct MonthView: View {
     @State private var currentMonth: Date = Date()
     
     private let calendar = Calendar.current
-    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -21,13 +21,14 @@ struct MonthView: View {
             HStack(spacing: 0) {
                 ForEach(weekdays, id: \.self) { weekday in
                     Text(weekday)
-                        .font(.caption)
-                        .fontWeight(.semibold)
+                        .font(AppTheme.captionFont)
+                        .foregroundColor(AppTheme.secondaryTextColor)
+                        .tracking(1)
                         .frame(maxWidth: .infinity)
                 }
             }
-            .padding(.vertical, 8)
-            .background(Color.gray.opacity(0.1))
+            .padding(.vertical, 12)
+            .background(AppTheme.surfaceColor)
             
             // Calendar grid
             let days = getDaysInMonth(currentMonth)
@@ -42,17 +43,21 @@ struct MonthView: View {
                 }
             }
         }
-        .navigationTitle(monthYearFormatter.string(from: currentMonth))
+        .navigationTitle(monthYearFormatter.string(from: currentMonth).uppercased())
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Previous") {
+                Button("PREV") {
                     currentMonth = currentMonth.addingMonths(-1)
                 }
+                .font(AppTheme.captionFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Next") {
+                Button("NEXT") {
                     currentMonth = currentMonth.addingMonths(1)
                 }
+                .font(AppTheme.captionFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
             }
         }
     }

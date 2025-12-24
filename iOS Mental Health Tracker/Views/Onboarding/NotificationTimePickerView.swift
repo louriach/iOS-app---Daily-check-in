@@ -13,39 +13,55 @@ struct NotificationTimePickerView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 30) {
-                Text("When would you like to be reminded to check in?")
-                    .font(.title2)
-                    .multilineTextAlignment(.center)
-                    .padding()
+            ZStack {
+                AppTheme.backgroundColor.ignoresSafeArea()
                 
-                DatePicker("Notification Time", selection: $settings.notificationTime, displayedComponents: .hourAndMinute)
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .padding()
-                
-                Button(action: {
-                    Task {
-                        let authorized = await NotificationService.shared.requestAuthorization()
-                        if authorized {
-                            NotificationService.shared.scheduleDailyNotification(at: settings.notificationTime)
-                            settings.hasCompletedOnboarding = true
-                            isPresented = false
-                        }
-                    }
-                }) {
-                    Text("Continue")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
+                VStack(spacing: 40) {
+                    Text("SET REMINDER TIME")
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.secondaryTextColor)
+                        .tracking(2)
+                        .multilineTextAlignment(.center)
                         .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                    
+                    DatePicker("", selection: $settings.notificationTime, displayedComponents: .hourAndMinute)
+                        .datePickerStyle(.wheel)
+                        .font(AppTheme.font)
+                        .labelsHidden()
+                        .padding()
+                        .minimalCard()
+                    
+                    Button(action: {
+                        Task {
+                            let authorized = await NotificationService.shared.requestAuthorization()
+                            if authorized {
+                                NotificationService.shared.scheduleDailyNotification(at: settings.notificationTime)
+                                settings.hasCompletedOnboarding = true
+                                isPresented = false
+                            }
+                        }
+                    }) {
+                        Text("CONTINUE")
+                            .font(AppTheme.headlineFont)
+                            .foregroundColor(AppTheme.primaryTextColor)
+                            .tracking(2)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                            .background(
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(AppTheme.accentColor)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(AppTheme.borderColor, lineWidth: 1)
+                                    )
+                            )
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
             }
-            .navigationTitle("Set Reminder")
+            .navigationTitle("SETUP")
             .navigationBarTitleDisplayMode(.inline)
+            .preferredColorScheme(.dark)
         }
     }
 }

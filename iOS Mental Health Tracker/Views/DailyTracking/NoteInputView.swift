@@ -20,38 +20,57 @@ struct NoteInputView: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Add a note (optional)")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 16) {
+            Text("NOTE")
+                .font(AppTheme.captionFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
+                .tracking(2)
             
-            Picker("Note Type", selection: $noteType) {
-                Text("Text").tag(NoteType.text)
-                Text("Voice").tag(NoteType.voice)
+            Picker("", selection: $noteType) {
+                Text("TEXT").tag(NoteType.text)
+                Text("VOICE").tag(NoteType.voice)
             }
             .pickerStyle(.segmented)
+            .font(AppTheme.captionFont)
             
             if noteType == .text {
-                TextEditor(text: $textNote)
-                    .frame(height: 100)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                    )
-                    .onChange(of: textNote) { newValue in
-                        if newValue.count > 240 {
-                            textNote = String(newValue.prefix(240))
-                        }
+                ZStack(alignment: .topLeading) {
+                    if textNote.isEmpty {
+                        Text("TYPE YOUR NOTE HERE...")
+                            .font(AppTheme.font)
+                            .foregroundColor(AppTheme.secondaryTextColor)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 8)
                     }
+                    
+                    TextEditor(text: $textNote)
+                        .font(AppTheme.font)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                        .frame(height: 120)
+                        .scrollContentBackground(.hidden)
+                        .background(Color.clear)
+                        .onChange(of: textNote) { oldValue, newValue in
+                            if newValue.count > 240 {
+                                textNote = String(newValue.prefix(240))
+                            }
+                        }
+                }
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(AppTheme.borderColor, lineWidth: 1)
+                )
+                .background(AppTheme.surfaceColor)
+                .cornerRadius(4)
                 
-                Text("\(textNote.count)/240 characters")
-                    .font(.caption)
-                    .foregroundColor(textNote.count > 240 ? .red : .secondary)
+                Text("\(textNote.count)/240")
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(textNote.count > 240 ? AppTheme.moodRed : AppTheme.secondaryTextColor)
                     .frame(maxWidth: .infinity, alignment: .trailing)
             } else {
                 VoiceRecordingView(audioService: audioService, recordingURL: $voiceNoteURL, recordingDuration: $voiceNoteDuration)
             }
         }
-        .padding()
+        .minimalCard()
     }
 }
 

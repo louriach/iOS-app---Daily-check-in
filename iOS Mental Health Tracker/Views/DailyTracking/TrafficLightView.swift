@@ -12,29 +12,32 @@ struct TrafficLightView: View {
     let onSelect: (MoodState) -> Void
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("How are you feeling?")
-                .font(.title2)
+        VStack(spacing: 24) {
+            Text("HOW ARE YOU FEELING?")
+                .font(AppTheme.headlineFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
+                .tracking(2)
                 .padding(.top)
             
-            HStack(spacing: 40) {
+            HStack(spacing: 32) {
                 ForEach(MoodState.allCases) { mood in
                     Button(action: {
                         selectedMood = mood
                         onSelect(mood)
                     }) {
-                        VStack(spacing: 8) {
+                        VStack(spacing: 12) {
                             Circle()
                                 .fill(mood.color)
-                                .frame(width: 80, height: 80)
+                                .frame(width: 64, height: 64)
                                 .overlay(
                                     Circle()
-                                        .stroke(selectedMood == mood ? Color.primary : Color.clear, lineWidth: 4)
+                                        .stroke(selectedMood == mood ? AppTheme.primaryTextColor : Color.clear, lineWidth: 2)
                                 )
                             
-                            Text(mood.displayName)
-                                .font(.caption)
-                                .foregroundColor(.primary)
+                            Text(mood.displayName.uppercased())
+                                .font(AppTheme.captionFont)
+                                .foregroundColor(selectedMood == mood ? AppTheme.primaryTextColor : AppTheme.secondaryTextColor)
+                                .tracking(1)
                         }
                     }
                 }

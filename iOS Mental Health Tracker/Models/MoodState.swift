@@ -29,12 +29,22 @@ enum MoodState: String, CaseIterable, Identifiable {
     var color: Color {
         switch self {
         case .red:
-            return .red
+            return Color(red: 0.75, green: 0.4, blue: 0.4)  // Desaturated red
         case .yellow:
-            return .yellow
+            return Color(red: 0.7, green: 0.65, blue: 0.4)   // Desaturated yellow/amber
         case .green:
-            return .green
+            return Color(red: 0.4, green: 0.65, blue: 0.5)  // Desaturated green
         }
+    }
+    
+    // Light tint for buttons/backgrounds (10% opacity)
+    var lightTint: Color {
+        color.opacity(0.1)
+    }
+    
+    // Medium tint for borders/accents (30% opacity)
+    var mediumTint: Color {
+        color.opacity(0.3)
     }
     
     var systemImage: String {
