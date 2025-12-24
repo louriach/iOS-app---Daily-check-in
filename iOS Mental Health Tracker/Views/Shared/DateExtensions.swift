@@ -31,6 +31,14 @@ extension Date {
         return calendar.date(from: components) ?? self
     }
     
+    var endOfMonth: Date {
+        let calendar = Calendar.current
+        var components = DateComponents()
+        components.month = 1
+        components.day = -1
+        return calendar.date(byAdding: components, to: startOfMonth) ?? self
+    }
+    
     var startOfYear: Date {
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year], from: self)

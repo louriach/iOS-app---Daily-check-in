@@ -13,41 +13,47 @@ struct WeekView: View {
     @State private var currentWeek: Date = Date()
     
     private let calendar = Calendar.current
-    private let weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    private let weekdayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter
+    }()
+    
+    private let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter
+    }()
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Weekday headers
-            HStack(spacing: 0) {
-                ForEach(weekdays, id: \.self) { weekday in
-                    Text(weekday)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .frame(maxWidth: .infinity)
-                }
-            }
-            .padding(.vertical, 8)
-            .background(Color.gray.opacity(0.1))
-            
-            // Week grid
-            let days = getDaysInWeek(currentWeek)
-            HStack(spacing: 0) {
+        ScrollView {
+            VStack(spacing: 12) {
+                let days = getDaysInWeek(currentWeek)
                 ForEach(days, id: \.self) { date in
-                    DayCellView(viewModel: viewModel, date: date, selectedDate: $selectedDate, size: .large)
+                    WeekDayRow(
+                        viewModel: viewModel,
+                        date: date,
+                        selectedDate: $selectedDate
+                    )
                 }
             }
+            .padding()
         }
-        .navigationTitle(weekRangeFormatter.string(from: currentWeek.startOfWeek))
+        .navigationTitle(weekRangeFormatter.string(from: currentWeek.startOfWeek).uppercased())
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Previous Week") {
+                Button("PREV") {
                     currentWeek = currentWeek.addingDays(-7)
                 }
+                .font(AppTheme.captionFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
             }
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Next Week") {
+                Button("NEXT") {
                     currentWeek = currentWeek.addingDays(7)
                 }
+                .font(AppTheme.captionFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
             }
         }
     }
@@ -64,5 +70,63 @@ struct WeekView: View {
         formatter.dateFormat = "MMM d"
         return formatter
     }()
+}
+
+struct WeekDayRow: View {
+    @ObservedObject var viewModel: CalendarViewModel
+    let date: Date
+    @Binding var selectedDate: Date
+    
+    private let calendar = Calendar.current
+    private let weekdayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter
+    }()
+    
+    private let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter
+    }()
+    
+    var body: some View {
+        let moodState = viewModel.getMoodState(for: date)
+        let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
+        let isToday = calendar.isDateInToday(date)
+        
+        Button(action: {
+            selectedDate = date
+        }) {
+            HStack {
+                Text(weekdayFormatter.string(from: date))
+                    .font(AppTheme.font)
+                    .foregroundColor(AppTheme.primaryTextColor)
+                
+                Spacer()
+                
+                Text(dayFormatter.string(from: date))
+                    .font(AppTheme.font)
+                    .foregroundColor(AppTheme.primaryTextColor)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                Group {
+                    if let mood = moodState {
+                        mood.color.opacity(0.3)
+                    } else {
+                        AppTheme.surfaceColor
+                    }
+                }
+            )
+            .cornerRadius(8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isToday ? AppTheme.accentColor : AppTheme.borderColor, lineWidth: isToday ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
 }
 
