@@ -12,6 +12,7 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var notificationSettings = NotificationSettings()
     @State private var selectedTab = 0
+    @State private var calendarViewModel: CalendarViewModel?
     
     private var dataService: DataService {
         DataService(viewContext: viewContext)
@@ -22,18 +23,33 @@ struct ContentView: View {
             if !notificationSettings.hasCompletedOnboarding {
                 NotificationTimePickerView(settings: notificationSettings, isPresented: .constant(true))
             } else {
-                TabView(selection: $selectedTab) {
-                    DailyTrackingView(dataService: dataService)
-                        .tabItem {
-                            Label("Check-In", systemImage: "plus.circle")
+                Group {
+                    if let calendarVM = calendarViewModel {
+                        TabView(selection: $selectedTab) {
+                            DailyTrackingView(
+                                dataService: dataService,
+                                selectedTab: $selectedTab,
+                                calendarViewModel: calendarVM
+                            )
+                            .tabItem {
+                                Label("Check-In", systemImage: "plus.circle")
+                            }
+                            .tag(0)
+                            
+                            CalendarGridView(viewModel: calendarVM)
+                                .tabItem {
+                                    Label("Calendar", systemImage: "calendar")
+                                }
+                                .tag(1)
                         }
-                        .tag(0)
-                    
-                    CalendarGridView(viewModel: CalendarViewModel(dataService: dataService))
-                        .tabItem {
-                            Label("Calendar", systemImage: "calendar")
-                        }
-                        .tag(1)
+                    } else {
+                        // Loading state - initialize calendar view model
+                        AppTheme.backgroundColor
+                            .ignoresSafeArea()
+                            .task {
+                                calendarViewModel = CalendarViewModel(dataService: dataService)
+                            }
+                    }
                 }
             }
         }
@@ -42,6 +58,12 @@ struct ContentView: View {
         .onAppear {
             if notificationSettings.hasCompletedOnboarding {
                 NotificationService.shared.scheduleDailyNotification(at: notificationSettings.notificationTime)
+            }
+        }
+        .task {
+            // Initialize calendar view model when view context is available
+            if notificationSettings.hasCompletedOnboarding && calendarViewModel == nil {
+                calendarViewModel = CalendarViewModel(dataService: dataService)
             }
         }
     }

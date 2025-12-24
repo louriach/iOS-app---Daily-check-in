@@ -13,9 +13,10 @@ struct VoiceRecordingView: View {
     @Binding var recordingURL: URL?
     @Binding var recordingDuration: Double
     @State private var hasPermission = false
+    @State private var isPressing = false
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 32) {
             if !hasPermission {
                 Button("REQUEST PERMISSION") {
                     Task {
@@ -24,11 +25,10 @@ struct VoiceRecordingView: View {
                 }
                 .buttonStyle(MinimalButtonStyle())
             } else {
-                if audioService.isRecording {
-                    VStack(spacing: 16) {
-                        Image(systemName: "mic.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(AppTheme.moodRed)
+                VStack(spacing: 24) {
+                    if audioService.isRecording {
+                        // Recording state with pulsating effect
+                        PulsatingMicView()
                         
                         Text(String(format: "%.1f", audioService.recordingDuration))
                             .font(AppTheme.titleFont)
@@ -37,58 +37,60 @@ struct VoiceRecordingView: View {
                                 recordingDuration = newValue
                             }
                         
-                        Text("RECORDING...")
+                        Text("RELEASE TO STOP")
                             .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.secondaryTextColor)
                             .tracking(2)
-                        
-                        Button("STOP") {
-                            audioService.stopRecording()
-                            recordingURL = audioService.getRecordingURL()
-                            recordingDuration = audioService.recordingDuration
-                        }
-                        .buttonStyle(MinimalButtonStyle())
-                        .foregroundColor(AppTheme.moodRed)
-                    }
-                } else {
-                    if let url = recordingURL {
-                        VStack(spacing: 12) {
-                            HStack {
-                                Image(systemName: "waveform")
-                                Text("RECORDED (\(Int(recordingDuration))S)")
-                            }
-                            .font(AppTheme.captionFont)
-                            .foregroundColor(AppTheme.secondaryTextColor)
-                            
-                            Button("RECORD AGAIN") {
-                                recordingURL = nil
-                                recordingDuration = 0
-                                recordingURL = audioService.startRecording()
-                            }
-                            .buttonStyle(MinimalButtonStyle())
-                        }
-                    } else {
-                        Button(action: {
-                            recordingURL = audioService.startRecording()
-                        }) {
-                            HStack {
-                                Image(systemName: "mic.fill")
-                                Text("RECORD")
-                            }
-                            .font(AppTheme.headlineFont)
+                    } else if let url = recordingURL, FileManager.default.fileExists(atPath: url.path) {
+                        // Show existing recording indicator
+                        Image(systemName: "waveform")
+                            .font(.system(size: 32))
                             .foregroundColor(AppTheme.primaryTextColor)
+                        
+                        Text("RECORDING SAVED")
+                            .font(AppTheme.captionFont)
+                            .foregroundColor(AppTheme.secondaryTextColor)
                             .tracking(2)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                    } else {
+                        // Idle state - press and hold to record
+                        Image(systemName: "mic.fill")
+                            .font(.system(size: 48))
+                            .foregroundColor(AppTheme.secondaryTextColor)
+                            .frame(width: 80, height: 80)
                             .background(
-                                RoundedRectangle(cornerRadius: 4)
+                                Circle()
                                     .fill(AppTheme.surfaceColor)
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 4)
+                                        Circle()
                                             .stroke(AppTheme.borderColor, lineWidth: 1)
                                     )
                             )
-                        }
+                            .scaleEffect(isPressing ? 0.95 : 1.0)
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { _ in
+                                        if !isPressing && !audioService.isRecording {
+                                            isPressing = true
+                                            recordingURL = audioService.startRecording()
+                                        }
+                                    }
+                                    .onEnded { _ in
+                                        isPressing = false
+                                        if audioService.isRecording {
+                                            audioService.stopRecording()
+                                            // Small delay to ensure file is saved
+                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                                recordingURL = audioService.getRecordingURL()
+                                                recordingDuration = audioService.recordingDuration
+                                            }
+                                        }
+                                    }
+                            )
+                        
+                        Text("HOLD TO RECORD")
+                            .font(AppTheme.captionFont)
+                            .foregroundColor(AppTheme.secondaryTextColor)
+                            .tracking(2)
                     }
                 }
             }
@@ -97,6 +99,11 @@ struct VoiceRecordingView: View {
         .onAppear {
             Task {
                 hasPermission = await audioService.requestMicrophonePermission()
+            }
+        }
+        .onChange(of: audioService.isRecording) { oldValue, newValue in
+            if !newValue {
+                isPressing = false
             }
         }
     }

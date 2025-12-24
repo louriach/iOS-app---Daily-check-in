@@ -9,7 +9,6 @@ import SwiftUI
 
 struct CalendarGridView: View {
     @ObservedObject var viewModel: CalendarViewModel
-    @State private var selectedDate: Date = Date()
     
     var body: some View {
         NavigationView {
@@ -29,13 +28,13 @@ struct CalendarGridView: View {
                     
                     switch viewModel.zoomLevel {
                     case .year:
-                        YearView(viewModel: viewModel, selectedDate: $selectedDate)
+                        YearView(viewModel: viewModel, selectedDate: $viewModel.selectedDate)
                     case .month:
-                        MonthView(viewModel: viewModel, selectedDate: $selectedDate)
+                        MonthView(viewModel: viewModel, selectedDate: $viewModel.selectedDate)
                     case .week:
-                        WeekView(viewModel: viewModel, selectedDate: $selectedDate)
+                        WeekView(viewModel: viewModel, selectedDate: $viewModel.selectedDate)
                     case .day:
-                        DayView(viewModel: viewModel, selectedDate: $selectedDate)
+                        DayView(viewModel: viewModel, selectedDate: $viewModel.selectedDate)
                     }
                 }
             }

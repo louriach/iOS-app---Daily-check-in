@@ -12,13 +12,18 @@ struct DailyTrackingView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var viewModel: DailyTrackingViewModel
     @State private var selectedDate: Date
-    @State private var showNoteInput = false
+    @State private var showTextNoteSheet = false
+    @State private var showVoiceNoteSheet = false
     @State private var showDatePicker = false
     @StateObject private var audioService = AudioRecordingService()
+    @Binding var selectedTab: Int
+    @ObservedObject var calendarViewModel: CalendarViewModel
     
-    init(date: Date = Date(), dataService: DataService) {
+    init(date: Date = Date(), dataService: DataService, selectedTab: Binding<Int>, calendarViewModel: CalendarViewModel) {
         _viewModel = StateObject(wrappedValue: DailyTrackingViewModel(dataService: dataService, date: date))
         _selectedDate = State(initialValue: date)
+        _selectedTab = selectedTab
+        self.calendarViewModel = calendarViewModel
     }
     
     var body: some View {
@@ -60,33 +65,54 @@ struct DailyTrackingView: View {
                         }
                         
                         if viewModel.selectedMood != nil {
-                            Button(action: {
-                                showNoteInput.toggle()
-                            }) {
-                                HStack {
-                                    Text(showNoteInput ? "HIDE NOTE" : "ADD NOTE (OPTIONAL)")
-                                        .font(AppTheme.captionFont)
-                                        .tracking(1)
-                                    Image(systemName: showNoteInput ? "chevron.up" : "chevron.down")
-                                        .font(AppTheme.captionFont)
+                            HStack(spacing: 16) {
+                                Button(action: {
+                                    showTextNoteSheet = true
+                                }) {
+                                    Image(systemName: viewModel.textNote.isEmpty ? "text.bubble" : "text.bubble.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(viewModel.textNote.isEmpty ? AppTheme.secondaryTextColor : AppTheme.primaryTextColor)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 16)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .fill(AppTheme.surfaceColor)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .stroke(viewModel.textNote.isEmpty ? AppTheme.borderColor : AppTheme.primaryTextColor, lineWidth: viewModel.textNote.isEmpty ? 1 : 1.5)
+                                                )
+                                        )
                                 }
-                                .foregroundColor(AppTheme.secondaryTextColor)
+                                
+                                Button(action: {
+                                    showVoiceNoteSheet = true
+                                }) {
+                                    Image(systemName: viewModel.voiceNoteURL == nil ? "mic" : "mic.fill")
+                                        .font(.system(size: 24))
+                                        .foregroundColor(viewModel.voiceNoteURL == nil ? AppTheme.secondaryTextColor : AppTheme.primaryTextColor)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 16)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .fill(AppTheme.surfaceColor)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .stroke(viewModel.voiceNoteURL == nil ? AppTheme.borderColor : AppTheme.primaryTextColor, lineWidth: viewModel.voiceNoteURL == nil ? 1 : 1.5)
+                                                )
+                                        )
+                                }
                             }
-                            .buttonStyle(MinimalButtonStyle())
-                            
-                            if showNoteInput {
-                                NoteInputView(
-                                    textNote: $viewModel.textNote,
-                                    audioService: audioService,
-                                    voiceNoteURL: $viewModel.voiceNoteURL,
-                                    voiceNoteDuration: $viewModel.voiceNoteDuration
-                                )
-                            }
+                            .padding(.horizontal)
                             
                             Button(action: {
                                 viewModel.saveEntry(for: selectedDate)
+                                // Navigate to calendar day view
+                                calendarViewModel.selectedDate = selectedDate
+                                calendarViewModel.zoomLevel = .day
+                                calendarViewModel.loadEntries()
+                                selectedTab = 1
                             }) {
-                                Text((viewModel.existingEntry != nil ? "UPDATE" : "SAVE").uppercased())
+                                Text("LOG IT")
                                     .font(AppTheme.headlineFont)
                                     .foregroundColor(AppTheme.primaryTextColor)
                                     .tracking(2)
@@ -143,6 +169,16 @@ struct DailyTrackingView: View {
             }
             .onChange(of: selectedDate) { oldValue, newDate in
                 viewModel.loadEntry(for: newDate)
+            }
+            .sheet(isPresented: $showTextNoteSheet) {
+                TextNoteSheet(textNote: $viewModel.textNote)
+            }
+            .sheet(isPresented: $showVoiceNoteSheet) {
+                VoiceNoteSheet(
+                    audioService: audioService,
+                    voiceNoteURL: $viewModel.voiceNoteURL,
+                    voiceNoteDuration: $viewModel.voiceNoteDuration
+                )
             }
         }
     }
