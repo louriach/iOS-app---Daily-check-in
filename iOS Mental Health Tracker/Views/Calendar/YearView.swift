@@ -247,6 +247,7 @@ struct YearEntrySheet: View {
     @ObservedObject var viewModel: CalendarViewModel
     let date: Date
     @Environment(\.dismiss) var dismiss
+    @StateObject private var audioService = AudioRecordingService()
     
     private let calendar = Calendar.current
     
@@ -306,17 +307,12 @@ struct YearEntrySheet: View {
                                 }
                                 
                                 // Voice note
-                                if let voiceNoteURL = entry.voiceNoteURL, !voiceNoteURL.isEmpty {
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text("VOICE")
-                                            .font(AppTheme.captionFont)
-                                            .foregroundColor(AppTheme.secondaryTextColor)
-                                            .tracking(2)
-                                        Text("\(Int(entry.voiceNoteDuration))S")
-                                            .font(AppTheme.font)
-                                            .foregroundColor(AppTheme.secondaryTextColor)
-                                    }
-                                    .minimalCard()
+                                if let voiceNoteURLString = entry.voiceNoteURL, !voiceNoteURLString.isEmpty {
+                                    VoiceNotePlaybackView(
+                                        audioService: audioService,
+                                        voiceNoteURLString: voiceNoteURLString,
+                                        duration: entry.voiceNoteDuration
+                                    )
                                 }
                                 
                                 // Created date
@@ -351,14 +347,93 @@ struct YearEntrySheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("DONE") {
+                        audioService.stopPlayback()
                         dismiss()
                     }
                     .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.secondaryTextColor)
                 }
             }
+            .onDisappear {
+                audioService.stopPlayback()
+            }
             .preferredColorScheme(.dark)
         }
+    }
+}
+
+struct VoiceNotePlaybackView: View {
+    @ObservedObject var audioService: AudioRecordingService
+    let voiceNoteURLString: String
+    let duration: Double
+    
+    private var voiceNoteURL: URL {
+        URL(fileURLWithPath: voiceNoteURLString)
+    }
+    
+    private var fileExists: Bool {
+        FileManager.default.fileExists(atPath: voiceNoteURL.path)
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("VOICE")
+                .font(AppTheme.captionFont)
+                .foregroundColor(AppTheme.secondaryTextColor)
+                .tracking(2)
+            
+            if fileExists {
+                if audioService.isPlaying {
+                    VStack(spacing: 16) {
+                        Text(String(format: "%.1f", audioService.playbackTime))
+                            .font(AppTheme.titleFont)
+                            .foregroundColor(AppTheme.primaryTextColor)
+                        
+                        Text("PLAYING...")
+                            .font(AppTheme.captionFont)
+                            .foregroundColor(AppTheme.secondaryTextColor)
+                            .tracking(2)
+                        
+                        Button("STOP") {
+                            audioService.stopPlayback()
+                        }
+                        .buttonStyle(MinimalButtonStyle())
+                    }
+                } else {
+                    Button(action: {
+                        audioService.playRecording(url: voiceNoteURL)
+                    }) {
+                        HStack {
+                            Image(systemName: "play.fill")
+                            Text("PLAY")
+                            Text("(\(Int(duration))S)")
+                                .foregroundColor(AppTheme.secondaryTextColor)
+                        }
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                        .tracking(2)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(AppTheme.surfaceColor)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(AppTheme.borderColor, lineWidth: 1)
+                                )
+                        )
+                    }
+                }
+            } else {
+                Text("\(Int(duration))S")
+                    .font(AppTheme.font)
+                    .foregroundColor(AppTheme.secondaryTextColor)
+                Text("File not found")
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(AppTheme.secondaryTextColor)
+            }
+        }
+        .minimalCard()
     }
 }
 

@@ -66,26 +66,6 @@ struct VoiceRecordingView: View {
                                     )
                             )
                             .scaleEffect(isPressing ? 0.95 : 1.0)
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { _ in
-                                        if !isPressing && !audioService.isRecording {
-                                            isPressing = true
-                                            recordingURL = audioService.startRecording()
-                                        }
-                                    }
-                                    .onEnded { _ in
-                                        isPressing = false
-                                        if audioService.isRecording {
-                                            audioService.stopRecording()
-                                            // Small delay to ensure file is saved
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                                recordingURL = audioService.getRecordingURL()
-                                                recordingDuration = audioService.recordingDuration
-                                            }
-                                        }
-                                    }
-                            )
                         
                         Text("HOLD TO RECORD")
                             .font(AppTheme.captionFont)
@@ -93,6 +73,27 @@ struct VoiceRecordingView: View {
                             .tracking(2)
                     }
                 }
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in
+                            if !isPressing && !audioService.isRecording {
+                                isPressing = true
+                                recordingURL = audioService.startRecording()
+                            }
+                        }
+                        .onEnded { _ in
+                            isPressing = false
+                            if audioService.isRecording {
+                                audioService.stopRecording()
+                                // Small delay to ensure file is saved
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                                    recordingURL = audioService.getRecordingURL()
+                                    recordingDuration = audioService.recordingDuration
+                                }
+                            }
+                        }
+                )
             }
         }
         .padding()
