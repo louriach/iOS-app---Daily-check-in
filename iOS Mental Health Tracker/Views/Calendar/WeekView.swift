@@ -39,8 +39,22 @@ struct WeekView: View {
             }
             .padding()
         }
-        .navigationTitle(weekRangeFormatter.string(from: currentWeek.startOfWeek).uppercased())
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Text(monthFormatter.string(from: currentWeek.startOfWeek))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                    
+                    Spacer()
+                    
+                    Text(yearFormatter.string(from: currentWeek.startOfWeek))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                }
+                .frame(maxWidth: .infinity)
+            }
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("PREV") {
                     currentWeek = currentWeek.addingDays(-7)
@@ -65,9 +79,15 @@ struct WeekView: View {
         }
     }
     
-    private let weekRangeFormatter: DateFormatter = {
+    private let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMM d"
+        formatter.dateFormat = "MMMM"
+        return formatter
+    }()
+    
+    private let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
         return formatter
     }()
 }

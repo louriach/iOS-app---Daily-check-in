@@ -10,7 +10,6 @@ import SwiftUI
 struct YearView: View {
     @ObservedObject var viewModel: CalendarViewModel
     @Binding var selectedDate: Date
-    @State private var currentYear: Date = Date()
     
     private let calendar = Calendar.current
     private let columnsPerRow = 7 // Days per week
@@ -21,9 +20,14 @@ struct YearView: View {
         return formatter
     }()
     
+    // Show years centered around today's year (± 5 years)
+    private var years: [Int] {
+        let currentYear = calendar.component(.year, from: Date())
+        return Array((currentYear - 5)...(currentYear + 5))
+    }
+    
     var body: some View {
         GeometryReader { geometry in
-            let days = getAllDaysInYear(currentYear)
             let padding: CGFloat = 8
             let gap: CGFloat = 2
             let availableWidth = geometry.size.width - (padding * 2)
@@ -32,61 +36,108 @@ struct YearView: View {
             let totalGapWidth = gap * CGFloat(columnsPerRow - 1)
             let dotSize = (availableWidth - totalGapWidth) / CGFloat(columnsPerRow)
             
-            ScrollView {
-                VStack(spacing: gap) {
-                    // Group days into rows of 7
-                    ForEach(Array(stride(from: 0, to: days.count, by: columnsPerRow)), id: \.self) { rowStart in
-                        let rowEnd = min(rowStart + columnsPerRow, days.count)
-                        
-                        HStack(spacing: gap) {
-                            // Add dots for this row
-                            ForEach(rowStart..<rowEnd, id: \.self) { dayIndex in
-                                YearDot(
-                                    viewModel: viewModel,
-                                    date: days[dayIndex],
-                                    selectedDate: $selectedDate,
-                                    dotSize: dotSize
-                                )
-                                .frame(width: dotSize, height: dotSize)
-                            }
-                            
-                            // Fill remaining cells if row is incomplete
-                            if rowEnd - rowStart < columnsPerRow {
-                                ForEach(0..<(columnsPerRow - (rowEnd - rowStart)), id: \.self) { _ in
-                                    Color.clear
-                                        .frame(width: dotSize, height: dotSize)
-                                }
-                            }
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        ForEach(years, id: \.self) { year in
+                            YearSection(
+                                viewModel: viewModel,
+                                selectedDate: $selectedDate,
+                                year: year,
+                                dotSize: dotSize,
+                                gap: gap,
+                                padding: padding
+                            )
+                            .id(year)
                         }
-                        .frame(maxWidth: .infinity)
+                    }
+                    .padding(.vertical, padding)
+                }
+                .onAppear {
+                    // Scroll to current year
+                    let currentYear = calendar.component(.year, from: Date())
+                    withAnimation {
+                        proxy.scrollTo(currentYear, anchor: .top)
                     }
                 }
-                .padding(.horizontal, padding)
-                .padding(.vertical, padding)
             }
         }
-        .navigationTitle(yearFormatter.string(from: currentYear))
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("PREV") {
-                    currentYear = currentYear.addingYears(-1)
+        .navigationTitle("YEARS")
+    }
+    
+    private func getAllDaysInYear(_ year: Int) -> [Date] {
+        let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? Date()
+        let isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+        let daysInYear = isLeapYear ? 366 : 365
+        
+        return (0..<daysInYear).compactMap { dayOffset in
+            calendar.date(byAdding: .day, value: dayOffset, to: startOfYear)
+        }
+    }
+}
+
+struct YearSection: View {
+    @ObservedObject var viewModel: CalendarViewModel
+    @Binding var selectedDate: Date
+    let year: Int
+    let dotSize: CGFloat
+    let gap: CGFloat
+    let padding: CGFloat
+    
+    private let calendar = Calendar.current
+    private let columnsPerRow = 7
+    
+    private let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter
+    }()
+    
+    var body: some View {
+        let days = getAllDaysInYear(year)
+        
+        VStack(alignment: .leading, spacing: 12) {
+            // Year label - use String format to avoid comma formatting
+            Text(String(year))
+                .font(AppTheme.titleFont)
+                .foregroundColor(AppTheme.primaryTextColor)
+                .padding(.horizontal, padding)
+            
+            // Year grid
+            VStack(spacing: gap) {
+                // Group days into rows of 7
+                ForEach(Array(stride(from: 0, to: days.count, by: columnsPerRow)), id: \.self) { rowStart in
+                    let rowEnd = min(rowStart + columnsPerRow, days.count)
+                    
+                    HStack(spacing: gap) {
+                        // Add dots for this row
+                        ForEach(rowStart..<rowEnd, id: \.self) { dayIndex in
+                            YearDot(
+                                viewModel: viewModel,
+                                date: days[dayIndex],
+                                selectedDate: $selectedDate,
+                                dotSize: dotSize
+                            )
+                            .frame(width: dotSize, height: dotSize)
+                        }
+                        
+                        // Fill remaining cells if row is incomplete
+                        if rowEnd - rowStart < columnsPerRow {
+                            ForEach(0..<(columnsPerRow - (rowEnd - rowStart)), id: \.self) { _ in
+                                Color.clear
+                                    .frame(width: dotSize, height: dotSize)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity)
                 }
-                .font(AppTheme.captionFont)
-                .foregroundColor(AppTheme.secondaryTextColor)
             }
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button("NEXT") {
-                    currentYear = currentYear.addingYears(1)
-                }
-                .font(AppTheme.captionFont)
-                .foregroundColor(AppTheme.secondaryTextColor)
-            }
+            .padding(.horizontal, padding)
         }
     }
     
-    private func getAllDaysInYear(_ date: Date) -> [Date] {
-        let startOfYear = date.startOfYear
-        let year = calendar.component(.year, from: date)
+    private func getAllDaysInYear(_ year: Int) -> [Date] {
+        let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? Date()
         let isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
         let daysInYear = isLeapYear ? 366 : 365
         
