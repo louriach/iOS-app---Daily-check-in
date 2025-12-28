@@ -18,7 +18,7 @@ enum MoodState: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .red:
-            return "Struggling"
+            return "Poor"
         case .yellow:
             return "Okay"
         case .green:

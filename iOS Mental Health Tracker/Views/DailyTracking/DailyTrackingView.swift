@@ -32,7 +32,19 @@ struct DailyTrackingView: View {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 32) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Date header
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Today is \(dateFormatter.string(from: selectedDate)).")
+                                .font(AppTheme.captionFont)
+                                .foregroundColor(AppTheme.secondaryTextColor)
+                            
+                            Text("How are you feeling?")
+                                .font(AppTheme.captionFont)
+                                .foregroundColor(AppTheme.primaryTextColor)
+                        }
+                        .padding(.horizontal)
+                        
                         TrafficLightView(selectedMood: $viewModel.selectedMood) { mood in
                             viewModel.selectedMood = mood
                         }
