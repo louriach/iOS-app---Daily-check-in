@@ -54,11 +54,21 @@ struct YearView: View {
                     .padding(.vertical, padding)
                 }
                 .onAppear {
-                    // Scroll to current year
-                    let currentYear = calendar.component(.year, from: Date())
+                    // Scroll to center around today's date
+                    let today = Date()
+                    let currentYear = calendar.component(.year, from: today)
+                    let startOfYear = calendar.date(from: DateComponents(year: currentYear, month: 1, day: 1)) ?? today
+                    
+                    // Calculate day of year (1-indexed, then convert to 0-indexed)
+                    let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 1
+                    let dayIndex = dayOfYear - 1 // Convert to 0-indexed
+                    // Calculate which row this day is in (0-indexed, 7 days per row)
+                    let rowIndex = dayIndex / 7
+                    let rowID = "\(currentYear)-row-\(rowIndex)"
+                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         withAnimation {
-                            proxy.scrollTo(currentYear, anchor: .top)
+                            proxy.scrollTo(rowID, anchor: .center)
                         }
                     }
                 }
@@ -101,6 +111,8 @@ struct YearSection: View {
                 // Group days into rows of 7
                 ForEach(Array(stride(from: 0, to: days.count, by: columnsPerRow)), id: \.self) { rowStart in
                     let rowEnd = min(rowStart + columnsPerRow, days.count)
+                    let rowIndex = rowStart / columnsPerRow
+                    let rowID = "\(year)-row-\(rowIndex)"
                     
                     HStack(spacing: gap) {
                         // Add dots for this row
@@ -124,6 +136,7 @@ struct YearSection: View {
                         }
                     }
                     .frame(maxWidth: .infinity)
+                    .id(rowID)
                 }
             }
             .padding(.horizontal, padding)
@@ -151,6 +164,10 @@ struct YearDot: View {
     
     private let calendar = Calendar.current
     
+    private var dayOfYear: Int {
+        calendar.ordinality(of: .day, in: .year, for: date) ?? 1
+    }
+    
     var body: some View {
         let moodState = viewModel.getMoodState(for: date)
         let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
@@ -160,18 +177,26 @@ struct YearDot: View {
             selectedDate = date
             onTap(date)
         }) {
-            Circle()
-                .fill(
-                    moodState?.color ?? AppTheme.borderColor
-                )
-                .frame(width: dotSize, height: dotSize)
-                .overlay(
-                    Circle()
-                        .stroke(
-                            isToday ? AppTheme.accentColor : (isSelected ? AppTheme.primaryTextColor : Color.clear),
-                            lineWidth: isToday ? 2 : 1
-                        )
-                )
+            ZStack {
+                Circle()
+                    .fill(
+                        moodState?.color ?? AppTheme.borderColor
+                    )
+                    .frame(width: dotSize, height: dotSize)
+                
+                Text("\(dayOfYear)")
+                    .font(.system(size: max(8, dotSize * 0.3), design: .monospaced))
+                    .foregroundColor(AppTheme.backgroundColor)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+            }
+            .overlay(
+                Circle()
+                    .stroke(
+                        isToday ? AppTheme.accentColor : (isSelected ? AppTheme.primaryTextColor : Color.clear),
+                        lineWidth: isToday ? 2 : 1
+                    )
+            )
         }
         .buttonStyle(.plain)
     }
