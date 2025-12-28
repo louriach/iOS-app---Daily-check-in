@@ -21,7 +21,7 @@ struct DailyTrackingView: View {
     
     init(date: Date = Date(), dataService: DataService, selectedTab: Binding<Int>, calendarViewModel: CalendarViewModel) {
         _viewModel = StateObject(wrappedValue: DailyTrackingViewModel(dataService: dataService, date: date))
-        _selectedDate = State(initialValue: date)
+        _selectedDate = State(initialValue: Calendar.current.startOfDay(for: date))
         _selectedTab = selectedTab
         self.calendarViewModel = calendarViewModel
     }
@@ -33,33 +33,6 @@ struct DailyTrackingView: View {
                 
                 ScrollView {
                     VStack(spacing: 32) {
-                        HStack {
-                            Text(dateFormatter.string(from: selectedDate).uppercased())
-                                .font(AppTheme.font)
-                                .foregroundColor(AppTheme.primaryTextColor)
-                            
-                            Spacer()
-                            
-                            Button(action: {
-                                showDatePicker = true
-                            }) {
-                                Image(systemName: "calendar")
-                                    .font(AppTheme.font)
-                                    .foregroundColor(AppTheme.secondaryTextColor)
-                                    .padding(8)
-                                    .background(
-                                        Circle()
-                                            .fill(AppTheme.surfaceColor)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(AppTheme.borderColor, lineWidth: 1)
-                                            )
-                                    )
-                            }
-                        }
-                        .padding()
-                        .minimalCard()
-                        
                         TrafficLightView(selectedMood: $viewModel.selectedMood) { mood in
                             viewModel.selectedMood = mood
                         }
@@ -70,15 +43,14 @@ struct DailyTrackingView: View {
                                     showTextNoteSheet = true
                                 }) {
                                     Image(systemName: viewModel.textNote.isEmpty ? "text.bubble" : "text.bubble.fill")
-                                        .font(.system(size: 24))
+                                        .font(.system(size: 20))
                                         .foregroundColor(viewModel.textNote.isEmpty ? AppTheme.secondaryTextColor : AppTheme.primaryTextColor)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 16)
+                                        .frame(width: 44, height: 44)
                                         .background(
-                                            RoundedRectangle(cornerRadius: 4)
+                                            Circle()
                                                 .fill(AppTheme.surfaceColor)
                                                 .overlay(
-                                                    RoundedRectangle(cornerRadius: 4)
+                                                    Circle()
                                                         .stroke(viewModel.textNote.isEmpty ? AppTheme.borderColor : AppTheme.primaryTextColor, lineWidth: viewModel.textNote.isEmpty ? 1 : 1.5)
                                                 )
                                         )
@@ -88,15 +60,14 @@ struct DailyTrackingView: View {
                                     showVoiceNoteSheet = true
                                 }) {
                                     Image(systemName: viewModel.voiceNoteURL == nil ? "mic" : "mic.fill")
-                                        .font(.system(size: 24))
+                                        .font(.system(size: 20))
                                         .foregroundColor(viewModel.voiceNoteURL == nil ? AppTheme.secondaryTextColor : AppTheme.primaryTextColor)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 16)
+                                        .frame(width: 44, height: 44)
                                         .background(
-                                            RoundedRectangle(cornerRadius: 4)
+                                            Circle()
                                                 .fill(AppTheme.surfaceColor)
                                                 .overlay(
-                                                    RoundedRectangle(cornerRadius: 4)
+                                                    Circle()
                                                         .stroke(viewModel.voiceNoteURL == nil ? AppTheme.borderColor : AppTheme.primaryTextColor, lineWidth: viewModel.voiceNoteURL == nil ? 1 : 1.5)
                                                 )
                                         )
@@ -136,8 +107,24 @@ struct DailyTrackingView: View {
                     .padding()
                 }
             }
-            .navigationTitle("CHECK-IN")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(dateFormatter.string(from: selectedDate).uppercased())
+                        .font(AppTheme.font)
+                        .foregroundColor(AppTheme.secondaryTextColor)
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showDatePicker = true
+                    }) {
+                        Image(systemName: "calendar")
+                            .font(AppTheme.font)
+                            .foregroundColor(AppTheme.secondaryTextColor)
+                    }
+                }
+            }
             .preferredColorScheme(.dark)
             .sheet(isPresented: $showDatePicker) {
                 NavigationView {
@@ -184,7 +171,7 @@ struct DailyTrackingView: View {
     
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d"
+        formatter.dateFormat = "EEEE d MMMM yyyy"
         return formatter
     }()
 }

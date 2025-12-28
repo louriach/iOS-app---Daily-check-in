@@ -1,5 +1,5 @@
 //
-//  PulsatingMicView.swift
+//  PulsatingWaveformView.swift
 //  iOS Mental Health Tracker
 //
 //  Created by Luis Ouriach on 24/12/2025.
@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-struct PulsatingMicView: View {
-    let recordingDuration: Double
+struct PulsatingWaveformView: View {
     @State private var pulseScale1: CGFloat = 1.0
     @State private var pulseScale2: CGFloat = 1.0
     @State private var pulseScale3: CGFloat = 1.0
@@ -20,27 +19,27 @@ struct PulsatingMicView: View {
         ZStack {
             // Pulsating circles - three layers
             Circle()
-                .stroke(AppTheme.moodRed.opacity(0.4), lineWidth: 2)
+                .stroke(AppTheme.primaryTextColor.opacity(0.4), lineWidth: 2)
                 .frame(width: 120, height: 120)
                 .scaleEffect(pulseScale1)
                 .opacity(pulseOpacity1)
             
             Circle()
-                .stroke(AppTheme.moodRed.opacity(0.3), lineWidth: 2)
+                .stroke(AppTheme.primaryTextColor.opacity(0.3), lineWidth: 2)
                 .frame(width: 120, height: 120)
                 .scaleEffect(pulseScale2)
                 .opacity(pulseOpacity2)
             
             Circle()
-                .stroke(AppTheme.moodRed.opacity(0.2), lineWidth: 2)
+                .stroke(AppTheme.primaryTextColor.opacity(0.2), lineWidth: 2)
                 .frame(width: 120, height: 120)
                 .scaleEffect(pulseScale3)
                 .opacity(pulseOpacity3)
             
-            // Recording duration text inside the circle
-            Text(String(format: "%.1f", recordingDuration))
-                .font(AppTheme.captionFont)
-                .foregroundColor(AppTheme.moodRed)
+            // Waveform icon
+            Image(systemName: "waveform")
+                .font(.system(size: 32))
+                .foregroundColor(AppTheme.primaryTextColor)
         }
         .frame(width: 120, height: 120)
         .onAppear {

@@ -20,11 +20,14 @@ struct VoiceNoteSheet: View {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
                 VStack(spacing: 32) {
-                    // Recording section
+                    // Recording section with integrated playback controls
                     VoiceRecordingView(
                         audioService: audioService,
                         recordingURL: $voiceNoteURL,
-                        recordingDuration: $voiceNoteDuration
+                        recordingDuration: $voiceNoteDuration,
+                        onDelete: {
+                            showDeleteConfirmation = true
+                        }
                     )
                     .onChange(of: voiceNoteURL) { oldValue, newValue in
                         // When recording finishes and URL is set, ensure it's saved
@@ -32,91 +35,27 @@ struct VoiceNoteSheet: View {
                             // Recording is complete and saved
                         }
                     }
-                    
-                    // Playback section (only show if we have an existing recording and not currently recording)
-                    if let url = voiceNoteURL,
-                       !audioService.isRecording,
-                       FileManager.default.fileExists(atPath: url.path) {
-                        VStack(spacing: 20) {
-                            Divider()
-                                .background(AppTheme.borderColor)
-                            
-                            Text("PLAYBACK")
-                                .font(AppTheme.captionFont)
-                                .foregroundColor(AppTheme.secondaryTextColor)
-                                .tracking(2)
-                            
-                            if audioService.isPlaying {
-                                VStack(spacing: 16) {
-                                    Text(String(format: "%.1f", audioService.playbackTime))
-                                        .font(AppTheme.titleFont)
-                                        .foregroundColor(AppTheme.primaryTextColor)
-                                    
-                                    Text("PLAYING...")
-                                        .font(AppTheme.captionFont)
-                                        .foregroundColor(AppTheme.secondaryTextColor)
-                                        .tracking(2)
-                                    
-                                    Button("STOP") {
-                                        audioService.stopPlayback()
-                                    }
-                                    .buttonStyle(MinimalButtonStyle())
-                                }
-                            } else {
-                                Button(action: {
-                                    audioService.playRecording(url: url)
-                                }) {
-                                    HStack {
-                                        Image(systemName: "play.fill")
-                                        Text("PLAY")
-                                    }
-                                    .font(AppTheme.headlineFont)
-                                    .foregroundColor(AppTheme.primaryTextColor)
-                                    .tracking(2)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .fill(AppTheme.surfaceColor)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 4)
-                                                    .stroke(AppTheme.borderColor, lineWidth: 1)
-                                            )
-                                    )
-                                }
-                            }
-                            
-                            Button(action: {
-                                showDeleteConfirmation = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "trash")
-                                    Text("DELETE")
-                                }
-                                .font(AppTheme.captionFont)
-                                .foregroundColor(AppTheme.moodRed)
-                                .tracking(2)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .fill(AppTheme.surfaceColor)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .stroke(AppTheme.moodRed.opacity(0.5), lineWidth: 1)
-                                        )
-                                )
-                            }
-                        }
-                        .padding()
-                        .minimalCard()
-                    }
                 }
                 .padding()
             }
             .navigationTitle("VOICE NOTE")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Delete button in top left (only show if recording exists)
+                if let url = voiceNoteURL,
+                   !audioService.isRecording,
+                   FileManager.default.fileExists(atPath: url.path) {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button(action: {
+                            showDeleteConfirmation = true
+                        }) {
+                            Image(systemName: "trash")
+                                .font(.system(size: 18))
+                                .foregroundColor(AppTheme.moodRed)
+                        }
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("DONE") {
                         audioService.stopPlayback()
