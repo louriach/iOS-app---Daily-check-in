@@ -14,7 +14,7 @@ struct TrafficLightView: View {
     var body: some View {
         VStack(spacing: 24) {
             Text("HOW ARE YOU FEELING?")
-                .font(AppTheme.headlineFont)
+                .font(AppTheme.captionFont)
                 .foregroundColor(AppTheme.secondaryTextColor)
                 .tracking(2)
                 .padding(.top)

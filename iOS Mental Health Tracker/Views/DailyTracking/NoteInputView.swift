@@ -37,7 +37,7 @@ struct NoteInputView: View {
                 ZStack(alignment: .topLeading) {
                     if textNote.isEmpty {
                         Text("TYPE YOUR NOTE HERE...")
-                            .font(AppTheme.font)
+                            .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.secondaryTextColor)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 8)

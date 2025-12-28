@@ -18,7 +18,7 @@ struct NotificationTimePickerView: View {
                 
                 VStack(spacing: 40) {
                     Text("SET REMINDER TIME")
-                        .font(AppTheme.headlineFont)
+                        .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.secondaryTextColor)
                         .tracking(2)
                         .multilineTextAlignment(.center)
@@ -26,7 +26,7 @@ struct NotificationTimePickerView: View {
                     
                     DatePicker("", selection: $settings.notificationTime, displayedComponents: .hourAndMinute)
                         .datePickerStyle(.wheel)
-                        .font(AppTheme.font)
+                        .font(AppTheme.captionFont)
                         .labelsHidden()
                         .padding()
                         .minimalCard()
@@ -42,7 +42,7 @@ struct NotificationTimePickerView: View {
                         }
                     }) {
                         Text("CONTINUE")
-                            .font(AppTheme.headlineFont)
+                            .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.primaryTextColor)
                             .tracking(2)
                             .frame(maxWidth: .infinity)

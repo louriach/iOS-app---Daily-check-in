@@ -126,13 +126,13 @@ struct YearView: View {
             ToolbarItem(placement: .principal) {
                 HStack {
                     Text("YEAR")
-                        .font(AppTheme.headlineFont)
+                        .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.primaryTextColor)
                     
                     Spacer()
                     
                     Text(String(visibleYear))
-                        .font(AppTheme.headlineFont)
+                        .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.primaryTextColor)
                 }
                 .frame(maxWidth: .infinity)
@@ -165,7 +165,7 @@ struct YearSection: View {
             // Inline header with year
             HStack {
                 Text(String(year))
-                    .font(AppTheme.titleFont)
+                    .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.primaryTextColor)
             }
             .padding(.horizontal, padding)
@@ -255,7 +255,7 @@ struct YearDot: View {
                     .frame(width: dotSize, height: dotSize)
                 
                 Text("\(dayOfYear)")
-                    .font(.system(size: max(8, dotSize * 0.3), design: .monospaced))
+                    .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.backgroundColor)
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
@@ -305,7 +305,7 @@ struct YearEntrySheet: View {
                             VStack(alignment: .leading, spacing: 16) {
                                 // Date header
                                 Text(dateFormatter.string(from: date))
-                                    .font(AppTheme.titleFont)
+                                    .font(AppTheme.captionFont)
                                     .foregroundColor(AppTheme.primaryTextColor)
                                     .padding(.bottom, 8)
                                 
@@ -316,7 +316,7 @@ struct YearEntrySheet: View {
                                             .fill(mood.color)
                                             .frame(width: 24, height: 24)
                                         Text(mood.displayName.uppercased())
-                                            .font(AppTheme.headlineFont)
+                                            .font(AppTheme.captionFont)
                                             .foregroundColor(AppTheme.primaryTextColor)
                                             .tracking(2)
                                     }
@@ -330,7 +330,7 @@ struct YearEntrySheet: View {
                                             .foregroundColor(AppTheme.secondaryTextColor)
                                             .tracking(2)
                                         Text(textNote)
-                                            .font(AppTheme.font)
+                                            .font(AppTheme.captionFont)
                                             .foregroundColor(AppTheme.primaryTextColor)
                                     }
                                     .minimalCard()
@@ -357,12 +357,12 @@ struct YearEntrySheet: View {
                             // No entry screen
                             VStack(spacing: 16) {
                                 Text("NO ENTRY")
-                                    .font(AppTheme.titleFont)
+                                    .font(AppTheme.captionFont)
                                     .foregroundColor(AppTheme.secondaryTextColor)
                                     .tracking(2)
                                 
                                 Text(dateFormatter.string(from: date))
-                                    .font(AppTheme.font)
+                                    .font(AppTheme.captionFont)
                                     .foregroundColor(AppTheme.secondaryTextColor)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -416,7 +416,7 @@ struct VoiceNotePlaybackView: View {
                 if audioService.isPlaying {
                     VStack(spacing: 16) {
                         Text(String(format: "%.1f", audioService.playbackTime))
-                            .font(AppTheme.titleFont)
+                            .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.primaryTextColor)
                         
                         Text("PLAYING...")
@@ -439,7 +439,7 @@ struct VoiceNotePlaybackView: View {
                             Text("(\(Int(duration))S)")
                                 .foregroundColor(AppTheme.secondaryTextColor)
                         }
-                        .font(AppTheme.headlineFont)
+                        .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.primaryTextColor)
                         .tracking(2)
                         .frame(maxWidth: .infinity)
@@ -456,7 +456,7 @@ struct VoiceNotePlaybackView: View {
                 }
             } else {
                 Text("\(Int(duration))S")
-                    .font(AppTheme.font)
+                    .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.secondaryTextColor)
                 Text("File not found")
                     .font(AppTheme.captionFont)

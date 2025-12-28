@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct AppTheme {
-    // Monospaced font
-    static let font = Font.system(.body, design: .monospaced)
-    static let titleFont = Font.system(.title, design: .monospaced)
-    static let headlineFont = Font.system(.headline, design: .monospaced)
+    // Monospaced font - all text uses caption size
+    static let font = Font.system(.caption, design: .monospaced)
+    static let titleFont = Font.system(.caption, design: .monospaced)
+    static let headlineFont = Font.system(.caption, design: .monospaced)
     static let captionFont = Font.system(.caption, design: .monospaced)
     
     // Dark mode colors

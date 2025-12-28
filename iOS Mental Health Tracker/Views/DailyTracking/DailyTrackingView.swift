@@ -83,7 +83,7 @@ struct DailyTrackingView: View {
                                 selectedTab = 1
                             }) {
                                 Text("LOG IT")
-                                    .font(AppTheme.headlineFont)
+                                    .font(AppTheme.captionFont)
                                     .foregroundColor(AppTheme.primaryTextColor)
                                     .tracking(2)
                                     .frame(maxWidth: .infinity)
@@ -111,7 +111,7 @@ struct DailyTrackingView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     Text(dateFormatter.string(from: selectedDate).uppercased())
-                        .font(AppTheme.font)
+                        .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.secondaryTextColor)
                 }
                 
@@ -120,7 +120,7 @@ struct DailyTrackingView: View {
                         showDatePicker = true
                     }) {
                         Image(systemName: "calendar")
-                            .font(AppTheme.font)
+                            .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.secondaryTextColor)
                     }
                 }
@@ -134,7 +134,7 @@ struct DailyTrackingView: View {
                         VStack {
                             DatePicker("", selection: $selectedDate, displayedComponents: .date)
                                 .datePickerStyle(.wheel)
-                                .font(AppTheme.font)
+                                .font(AppTheme.captionFont)
                                 .labelsHidden()
                                 .padding()
                         }
