@@ -79,8 +79,22 @@ struct DayView: View {
                 .padding()
             }
         }
-        .navigationTitle(dayFormatter.string(from: currentDay).uppercased())
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Text(dayFormatter.string(from: currentDay))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                    
+                    Spacer()
+                    
+                    Text(yearFormatter.string(from: currentDay))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                }
+                .frame(maxWidth: .infinity)
+            }
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("PREV") {
                     currentDay = currentDay.addingDays(-1)
@@ -101,7 +115,13 @@ struct DayView: View {
     
     private let dayFormatter: DateFormatter = {
         let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMMM d, yyyy"
+        formatter.dateFormat = "EEEE, MMMM d"
+        return formatter
+    }()
+    
+    private let yearFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
         return formatter
     }()
     

@@ -74,6 +74,23 @@ struct YearView: View {
                 }
             }
         }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Text("YEAR")
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                    
+                    Spacer()
+                    
+                    Text(String(calendar.component(.year, from: selectedDate)))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
         .sheet(isPresented: $showEntrySheet) {
             if let date = selectedEntryDate {
                 YearEntrySheet(viewModel: viewModel, date: date)

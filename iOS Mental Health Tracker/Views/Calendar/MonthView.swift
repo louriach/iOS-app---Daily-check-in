@@ -44,21 +44,6 @@ struct MonthView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Month and year header
-                HStack {
-                    Text(monthFormatter.string(from: currentMonth))
-                        .font(AppTheme.font)
-                        .foregroundColor(AppTheme.primaryTextColor)
-                    
-                    Spacer()
-                    
-                    Text(yearFormatter.string(from: currentMonth))
-                        .font(AppTheme.font)
-                        .foregroundColor(AppTheme.primaryTextColor)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-                
                 // Weekday headers
                 HStack(spacing: 0) {
                     ForEach(weekdays, id: \.self) { weekday in
@@ -87,8 +72,22 @@ struct MonthView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle(monthFormatter.string(from: currentMonth).uppercased())
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .principal) {
+                HStack {
+                    Text(monthFormatter.string(from: currentMonth))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                    
+                    Spacer()
+                    
+                    Text(yearFormatter.string(from: currentMonth))
+                        .font(AppTheme.headlineFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                }
+                .frame(maxWidth: .infinity)
+            }
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("PREV") {
                     currentMonth = currentMonth.addingMonths(-1)
