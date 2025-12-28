@@ -7,11 +7,20 @@
 
 import SwiftUI
 
+struct YearLabelPositionPreference: PreferenceKey {
+    static var defaultValue: [Int: CGFloat] = [:]
+    static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
+        value.merge(nextValue()) { (_, new) in new }
+    }
+}
+
 struct YearView: View {
     @ObservedObject var viewModel: CalendarViewModel
     @Binding var selectedDate: Date
     @State private var selectedEntryDate: Date?
     @State private var showEntrySheet = false
+    @State private var visibleYear: Int = Calendar.current.component(.year, from: Date())
+    @State private var updateTask: Task<Void, Never>?
     
     private let calendar = Calendar.current
     private let columnsPerRow = 7 // Days per week
@@ -52,11 +61,48 @@ struct YearView: View {
                         }
                     }
                     .padding(.vertical, padding)
+                    .onPreferenceChange(YearLabelPositionPreference.self) { yearPositions in
+                        // Find the year whose label has most recently passed the top (threshold)
+                        let threshold: CGFloat = 100
+                        let passedYears = yearPositions.filter { $0.value <= threshold }
+                        
+                        let newYear: Int?
+                        if let activeYear = passedYears.max(by: { $0.value < $1.value })?.key {
+                            newYear = activeYear
+                        } else if let closestYear = yearPositions.min(by: { 
+                            abs($0.value - threshold) < abs($1.value - threshold)
+                        })?.key {
+                            newYear = closestYear
+                        } else {
+                            newYear = nil
+                        }
+                        
+                        // Update immediately to stay in sync with scroll position
+                        if let newYear = newYear, newYear != visibleYear {
+                            // Cancel any pending update
+                            updateTask?.cancel()
+                            
+                            // Update immediately on next run loop to prevent blocking
+                            Task { @MainActor in
+                                // Check again in case it changed during the async dispatch
+                                if newYear != visibleYear {
+                                    // Use transaction to prevent animation interference
+                                    var transaction = Transaction()
+                                    transaction.disablesAnimations = true
+                                    withTransaction(transaction) {
+                                        visibleYear = newYear
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
+                .coordinateSpace(name: "scroll")
                 .onAppear {
                     // Scroll to center around today's date
                     let today = Date()
                     let currentYear = calendar.component(.year, from: today)
+                    visibleYear = currentYear
                     let startOfYear = calendar.date(from: DateComponents(year: currentYear, month: 1, day: 1)) ?? today
                     
                     // Calculate day of year (1-indexed, then convert to 0-indexed)
@@ -84,7 +130,7 @@ struct YearView: View {
                     
                     Spacer()
                     
-                    Text(String(calendar.component(.year, from: selectedDate)))
+                    Text(String(visibleYear))
                         .font(AppTheme.headlineFont)
                         .foregroundColor(AppTheme.primaryTextColor)
                 }
@@ -122,6 +168,12 @@ struct YearSection: View {
                     .foregroundColor(AppTheme.primaryTextColor)
             }
             .padding(.horizontal, padding)
+            .background(
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(key: YearLabelPositionPreference.self, value: [year: geometry.frame(in: .named("scroll")).minY])
+                }
+            )
             
             // Year grid
             VStack(spacing: gap) {
