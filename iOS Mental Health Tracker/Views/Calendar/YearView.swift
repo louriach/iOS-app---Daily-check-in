@@ -98,7 +98,10 @@ struct YearView: View {
                     }
                 }
                 .coordinateSpace(name: "scroll")
-                .onAppear {
+                .task {
+                    // Defer scroll animation slightly to allow initial render to complete
+                    try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
+                    
                     // Scroll to center around today's date
                     let today = Date()
                     let currentYear = calendar.component(.year, from: today)
@@ -112,10 +115,8 @@ struct YearView: View {
                     let rowIndex = dayIndex / 7
                     let rowID = "\(currentYear)-row-\(rowIndex)"
                     
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation {
-                            proxy.scrollTo(rowID, anchor: .center)
-                        }
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        proxy.scrollTo(rowID, anchor: .center)
                     }
                 }
             }
@@ -271,71 +272,6 @@ struct YearDot: View {
     }
 }
 
-struct MonthCellView: View {
-    @ObservedObject var viewModel: CalendarViewModel
-    let monthDate: Date
-    @Binding var selectedDate: Date
-    var daySize: DayCellView.CellSize = .small
-    
-    private let calendar = Calendar.current
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(monthDate, formatter: monthFormatter)
-                .font(daySize == .small ? AppTheme.captionFont : AppTheme.font)
-                .foregroundColor(AppTheme.primaryTextColor)
-                .fontWeight(.semibold)
-            
-            let days = getDaysInMonth(monthDate)
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: daySize == .small ? 2 : 4), count: 7), spacing: daySize == .small ? 2 : 4) {
-                ForEach(days, id: \.self) { date in
-                    if let date = date {
-                        DayCellView(viewModel: viewModel, date: date, selectedDate: $selectedDate, size: daySize)
-                    } else {
-                        Color.clear
-                            .frame(height: daySize == .small ? 20 : 40)
-                    }
-                }
-            }
-        }
-        .padding(daySize == .small ? 8 : 12)
-        .background(AppTheme.surfaceColor)
-        .cornerRadius(8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(AppTheme.borderColor, lineWidth: 1)
-        )
-    }
-    
-    private func getDaysInMonth(_ date: Date) -> [Date?] {
-        let range = calendar.range(of: .day, in: .month, for: date)!
-        let firstDay = date.startOfMonth
-        let firstWeekday = calendar.component(.weekday, from: firstDay)
-        let daysInMonth = range.count
-        
-        var days: [Date?] = []
-        
-        // Add empty cells for days before the first day of the month
-        for _ in 1..<firstWeekday {
-            days.append(nil)
-        }
-        
-        // Add all days in the month
-        for day in 1...daysInMonth {
-            if let dayDate = calendar.date(byAdding: .day, value: day - 1, to: firstDay) {
-                days.append(dayDate)
-            }
-        }
-        
-        return days
-    }
-    
-    private let monthFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMM"
-        return formatter
-    }()
-}
 
 struct YearEntrySheet: View {
     @ObservedObject var viewModel: CalendarViewModel

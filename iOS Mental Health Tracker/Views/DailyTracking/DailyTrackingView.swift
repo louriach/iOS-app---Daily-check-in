@@ -106,9 +106,8 @@ struct DailyTrackingView: View {
                             
                             Button(action: {
                                 viewModel.saveEntry(for: selectedDate)
-                                // Navigate to calendar day view
+                                // Navigate to calendar view
                                 calendarViewModel.selectedDate = selectedDate
-                                calendarViewModel.zoomLevel = .day
                                 calendarViewModel.loadEntries()
                                 selectedTab = 1
                             }) {

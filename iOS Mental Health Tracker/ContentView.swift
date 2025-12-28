@@ -32,15 +32,33 @@ struct ContentView: View {
                                 calendarViewModel: calendarVM
                             )
                             .tabItem {
-                                Label("Check-In", systemImage: "plus.circle")
+                                Image(systemName: "plus.circle.fill")
                             }
+                            .accessibilityLabel("Check-In")
+                            .help("Check-In")
                             .tag(0)
                             
                             CalendarGridView(viewModel: calendarVM)
                                 .tabItem {
-                                    Label("Calendar", systemImage: "calendar")
+                                    Image(systemName: "calendar")
                                 }
-                                .tag(1)
+                            .accessibilityLabel("Calendar")
+                            .help("Calendar")
+                            .tag(1)
+                        }
+                        .tint(AppTheme.primaryTextColor)
+                        .onAppear {
+                            // Customize tab bar appearance for unselected icons
+                            let appearance = UITabBarAppearance()
+                            appearance.configureWithOpaqueBackground()
+                            appearance.backgroundColor = UIColor(AppTheme.surfaceColor)
+                            
+                            // Unselected icon color
+                            appearance.stackedLayoutAppearance.normal.iconColor = UIColor(AppTheme.secondaryTextColor)
+                            
+                            // Selected icon color (handled by .tint())
+                            UITabBar.appearance().standardAppearance = appearance
+                            UITabBar.appearance().scrollEdgeAppearance = appearance
                         }
                     } else {
                         // Loading state - initialize calendar view model

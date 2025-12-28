@@ -11,59 +11,7 @@ import Combine
 
 class CalendarViewModel: ObservableObject {
     @Published var selectedDate: Date = Date()
-    @Published var zoomLevel: ZoomLevel = .month
     @Published var entries: [MoodEntry] = []
-    @Published var zoomScale: Double = 1.0 // Continuous zoom scale for pinch gesture
-    
-    enum ZoomLevel: Double, CaseIterable {
-        case year = 0.0
-        case month = 1.0
-        case week = 2.0
-        case day = 3.0
-        
-        var next: ZoomLevel? {
-            switch self {
-            case .year: return .month
-            case .month: return .week
-            case .week: return .day
-            case .day: return nil
-            }
-        }
-        
-        var previous: ZoomLevel? {
-            switch self {
-            case .year: return nil
-            case .month: return .year
-            case .week: return .month
-            case .day: return .week
-            }
-        }
-    }
-    
-    func updateZoomLevel(from scale: Double) {
-        // Map scale to zoom level with wider thresholds for less sensitivity
-        // Scale thresholds (wider ranges for smoother transitions):
-        // < 0.5: year (zoomed out)
-        // 0.5 - 1.0: month
-        // 1.0 - 1.5: week
-        // > 1.5: day (zoomed in)
-        
-        let newLevel: ZoomLevel
-        if scale < 0.5 {
-            newLevel = .year
-        } else if scale < 1.0 {
-            newLevel = .month
-        } else if scale < 1.5 {
-            newLevel = .week
-        } else {
-            newLevel = .day
-        }
-        
-        // Only update if different to avoid unnecessary animations
-        if newLevel != zoomLevel {
-            zoomLevel = newLevel
-        }
-    }
     
     private let dataService: DataService
     
@@ -74,6 +22,19 @@ class CalendarViewModel: ObservableObject {
     
     func loadEntries() {
         entries = dataService.getAllMoodEntries()
+    }
+    
+    @MainActor
+    func loadEntriesAsync() async {
+        // Load entries asynchronously to prevent blocking UI during tab switch
+        // Use Task to move work off the main thread initially
+        let loadedEntries = await Task { @MainActor in
+            // Small delay to allow UI to render first
+            try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
+            return dataService.getAllMoodEntries()
+        }.value
+        
+        entries = loadedEntries
     }
     
     func getMoodEntry(for date: Date) -> MoodEntry? {
