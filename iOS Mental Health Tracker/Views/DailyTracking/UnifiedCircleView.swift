@@ -27,12 +27,19 @@ struct UnifiedCircleView: View {
     var body: some View {
         ZStack {
             // Base circle - always present for consistent layout
-            Circle()
-                .fill(AppTheme.surfaceColor)
-                .overlay(
-                    Circle()
-                        .stroke(AppTheme.borderColor, lineWidth: 1)
-                )
+            // Only show border when there's a saved recording (matches filled note icon style)
+            // No border in idle state or during recording
+            if hasRecording {
+                Circle()
+                    .fill(AppTheme.surfaceColor)
+                    .overlay(
+                        Circle()
+                            .stroke(AppTheme.primaryTextColor, lineWidth: 1.5)
+                    )
+            } else {
+                Circle()
+                    .fill(AppTheme.surfaceColor)
+            }
             
             // Pulsating circles (only when recording or playing)
             if isRecording || isPlaying {
