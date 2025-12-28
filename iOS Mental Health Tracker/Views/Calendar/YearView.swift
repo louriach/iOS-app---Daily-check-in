@@ -10,15 +10,11 @@ import SwiftUI
 struct YearView: View {
     @ObservedObject var viewModel: CalendarViewModel
     @Binding var selectedDate: Date
+    @State private var selectedEntryDate: Date?
+    @State private var showEntrySheet = false
     
     private let calendar = Calendar.current
     private let columnsPerRow = 7 // Days per week
-    
-    private let yearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }()
     
     // Show years centered around today's year (± 5 years)
     private var years: [Int] {
@@ -46,7 +42,11 @@ struct YearView: View {
                                 year: year,
                                 dotSize: dotSize,
                                 gap: gap,
-                                padding: padding
+                                padding: padding,
+                                onDotTapped: { date in
+                                    selectedEntryDate = date
+                                    showEntrySheet = true
+                                }
                             )
                             .id(year)
                         }
@@ -56,22 +56,18 @@ struct YearView: View {
                 .onAppear {
                     // Scroll to current year
                     let currentYear = calendar.component(.year, from: Date())
-                    withAnimation {
-                        proxy.scrollTo(currentYear, anchor: .top)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        withAnimation {
+                            proxy.scrollTo(currentYear, anchor: .top)
+                        }
                     }
                 }
             }
         }
-        .navigationTitle("YEARS")
-    }
-    
-    private func getAllDaysInYear(_ year: Int) -> [Date] {
-        let startOfYear = calendar.date(from: DateComponents(year: year, month: 1, day: 1)) ?? Date()
-        let isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-        let daysInYear = isLeapYear ? 366 : 365
-        
-        return (0..<daysInYear).compactMap { dayOffset in
-            calendar.date(byAdding: .day, value: dayOffset, to: startOfYear)
+        .sheet(isPresented: $showEntrySheet) {
+            if let date = selectedEntryDate {
+                YearEntrySheet(viewModel: viewModel, date: date)
+            }
         }
     }
 }
@@ -83,25 +79,22 @@ struct YearSection: View {
     let dotSize: CGFloat
     let gap: CGFloat
     let padding: CGFloat
+    let onDotTapped: (Date) -> Void
     
     private let calendar = Calendar.current
     private let columnsPerRow = 7
-    
-    private let yearFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy"
-        return formatter
-    }()
     
     var body: some View {
         let days = getAllDaysInYear(year)
         
         VStack(alignment: .leading, spacing: 12) {
-            // Year label - use String format to avoid comma formatting
-            Text(String(year))
-                .font(AppTheme.titleFont)
-                .foregroundColor(AppTheme.primaryTextColor)
-                .padding(.horizontal, padding)
+            // Inline header with year
+            HStack {
+                Text(String(year))
+                    .font(AppTheme.titleFont)
+                    .foregroundColor(AppTheme.primaryTextColor)
+            }
+            .padding(.horizontal, padding)
             
             // Year grid
             VStack(spacing: gap) {
@@ -116,7 +109,8 @@ struct YearSection: View {
                                 viewModel: viewModel,
                                 date: days[dayIndex],
                                 selectedDate: $selectedDate,
-                                dotSize: dotSize
+                                dotSize: dotSize,
+                                onTap: onDotTapped
                             )
                             .frame(width: dotSize, height: dotSize)
                         }
@@ -134,6 +128,7 @@ struct YearSection: View {
             }
             .padding(.horizontal, padding)
         }
+        .padding(.bottom, 24)
     }
     
     private func getAllDaysInYear(_ year: Int) -> [Date] {
@@ -152,6 +147,7 @@ struct YearDot: View {
     let date: Date
     @Binding var selectedDate: Date
     let dotSize: CGFloat
+    let onTap: (Date) -> Void
     
     private let calendar = Calendar.current
     
@@ -162,6 +158,7 @@ struct YearDot: View {
         
         Button(action: {
             selectedDate = date
+            onTap(date)
         }) {
             Circle()
                 .fill(
@@ -244,5 +241,124 @@ struct MonthCellView: View {
         formatter.dateFormat = "MMM"
         return formatter
     }()
+}
+
+struct YearEntrySheet: View {
+    @ObservedObject var viewModel: CalendarViewModel
+    let date: Date
+    @Environment(\.dismiss) var dismiss
+    
+    private let calendar = Calendar.current
+    
+    private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMMM d, yyyy"
+        return formatter
+    }()
+    
+    private let dateTimeFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
+    }()
+    
+    var body: some View {
+        NavigationView {
+            ZStack {
+                AppTheme.backgroundColor.ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 24) {
+                        if let entry = viewModel.getMoodEntry(for: date) {
+                            VStack(alignment: .leading, spacing: 16) {
+                                // Date header
+                                Text(dateFormatter.string(from: date))
+                                    .font(AppTheme.titleFont)
+                                    .foregroundColor(AppTheme.primaryTextColor)
+                                    .padding(.bottom, 8)
+                                
+                                // Mood state
+                                if let moodString = entry.moodState, let mood = MoodState(rawValue: moodString) {
+                                    HStack(spacing: 12) {
+                                        Circle()
+                                            .fill(mood.color)
+                                            .frame(width: 24, height: 24)
+                                        Text(mood.displayName.uppercased())
+                                            .font(AppTheme.headlineFont)
+                                            .foregroundColor(AppTheme.primaryTextColor)
+                                            .tracking(2)
+                                    }
+                                }
+                                
+                                // Text note
+                                if let textNote = entry.textNote, !textNote.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("NOTE")
+                                            .font(AppTheme.captionFont)
+                                            .foregroundColor(AppTheme.secondaryTextColor)
+                                            .tracking(2)
+                                        Text(textNote)
+                                            .font(AppTheme.font)
+                                            .foregroundColor(AppTheme.primaryTextColor)
+                                    }
+                                    .minimalCard()
+                                }
+                                
+                                // Voice note
+                                if let voiceNoteURL = entry.voiceNoteURL, !voiceNoteURL.isEmpty {
+                                    VStack(alignment: .leading, spacing: 8) {
+                                        Text("VOICE")
+                                            .font(AppTheme.captionFont)
+                                            .foregroundColor(AppTheme.secondaryTextColor)
+                                            .tracking(2)
+                                        Text("\(Int(entry.voiceNoteDuration))S")
+                                            .font(AppTheme.font)
+                                            .foregroundColor(AppTheme.secondaryTextColor)
+                                    }
+                                    .minimalCard()
+                                }
+                                
+                                // Created date
+                                if let createdAt = entry.createdAt {
+                                    Text("CREATED: \(createdAt, formatter: dateTimeFormatter)")
+                                        .font(AppTheme.captionFont)
+                                        .foregroundColor(AppTheme.secondaryTextColor)
+                                }
+                            }
+                            .padding()
+                        } else {
+                            // No entry screen
+                            VStack(spacing: 16) {
+                                Text("NO ENTRY")
+                                    .font(AppTheme.titleFont)
+                                    .foregroundColor(AppTheme.secondaryTextColor)
+                                    .tracking(2)
+                                
+                                Text(dateFormatter.string(from: date))
+                                    .font(AppTheme.font)
+                                    .foregroundColor(AppTheme.secondaryTextColor)
+                            }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding()
+                        }
+                    }
+                    .padding()
+                }
+            }
+            .navigationTitle("ENTRY")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("DONE") {
+                        dismiss()
+                    }
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(AppTheme.secondaryTextColor)
+                }
+            }
+            .preferredColorScheme(.dark)
+        }
+    }
 }
 
