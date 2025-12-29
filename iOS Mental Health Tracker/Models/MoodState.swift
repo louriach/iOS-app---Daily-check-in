@@ -47,6 +47,30 @@ enum MoodState: String, CaseIterable, Identifiable {
         color.opacity(0.3)
     }
     
+    // Border color for unpressed state
+    var borderColor: Color {
+        switch self {
+        case .red:
+            return Color(hex: "6D3738")
+        case .yellow:
+            return Color(hex: "625935")
+        case .green:
+            return Color(hex: "2F5B45")
+        }
+    }
+    
+    // Text color for unpressed state
+    var unpressedTextColor: Color {
+        switch self {
+        case .red:
+            return Color(hex: "F52B2F")
+        case .yellow:
+            return Color(hex: "C9A30B")
+        case .green:
+            return Color(hex: "17B968")
+        }
+    }
+    
     var systemImage: String {
         switch self {
         case .red:

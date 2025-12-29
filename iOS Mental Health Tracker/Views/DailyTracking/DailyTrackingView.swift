@@ -32,9 +32,11 @@ struct DailyTrackingView: View {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 40) {
-                        // Date header - left aligned
-                        VStack(alignment: .leading, spacing: 8) {
+                    VStack(spacing: 40) {
+                        Spacer()
+                        
+                        // Date header - centered
+                        VStack(spacing: 8) {
                             Text("\(dateFormatter.string(from: selectedDate)).")
                                 .font(.system(size: 16, design: .monospaced))
                                 .foregroundColor(AppTheme.secondaryTextColor)
@@ -45,81 +47,86 @@ struct DailyTrackingView: View {
                         }
                         .padding(.horizontal)
                         
-                        // Mood selection - left aligned
-                        TrafficLightView(selectedMood: $viewModel.selectedMood) { mood in
-                            viewModel.selectedMood = mood
-                        }
+                        // Mood selection - full width, vertical stack
+                        TrafficLightView(
+                            selectedMood: $viewModel.selectedMood,
+                            onSelect: { mood in
+                                viewModel.selectedMood = mood
+                            },
+                            noteButtons: {
+                                HStack(spacing: 12) {
+                                    if let mood = viewModel.selectedMood {
+                                        Button(action: {
+                                            showTextNoteSheet = true
+                                        }) {
+                                            Image(systemName: viewModel.textNote.isEmpty ? "text.bubble" : "text.bubble.fill")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(mood.unpressedTextColor)
+                                                .frame(width: 44, height: 44)
+                                                .background(
+                                                    Circle()
+                                                        .fill(mood.color.opacity(0.2))
+                                                        .overlay(
+                                                            Circle()
+                                                                .stroke(viewModel.textNote.isEmpty ? mood.borderColor : mood.unpressedTextColor, lineWidth: viewModel.textNote.isEmpty ? 1 : 1.5)
+                                                        )
+                                                )
+                                        }
+                                        
+                                        Button(action: {
+                                            showVoiceNoteSheet = true
+                                        }) {
+                                            Image(systemName: viewModel.voiceNoteURL == nil ? "mic" : "mic.fill")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(mood.unpressedTextColor)
+                                                .frame(width: 44, height: 44)
+                                                .background(
+                                                    Circle()
+                                                        .fill(mood.color.opacity(0.2))
+                                                        .overlay(
+                                                            Circle()
+                                                                .stroke(viewModel.voiceNoteURL == nil ? mood.borderColor : mood.unpressedTextColor, lineWidth: viewModel.voiceNoteURL == nil ? 1 : 1.5)
+                                                        )
+                                                )
+                                        }
+                                    }
+                                }
+                            }
+                        )
                         
                         if viewModel.selectedMood != nil {
-                            VStack(alignment: .leading, spacing: 32) {
-                                // Note buttons - left aligned
-                                HStack(spacing: 16) {
-                                Button(action: {
-                                    showTextNoteSheet = true
-                                }) {
-                                    Image(systemName: viewModel.textNote.isEmpty ? "text.bubble" : "text.bubble.fill")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(viewModel.textNote.isEmpty ? AppTheme.secondaryTextColor : AppTheme.primaryTextColor)
-                                        .frame(width: 44, height: 44)
-                                        .background(
-                                            Circle()
+                            // LOG IT button - centered
+                            Button(action: {
+                                viewModel.saveEntry(for: selectedDate)
+                                // Navigate to calendar view
+                                calendarViewModel.selectedDate = selectedDate
+                                calendarViewModel.loadEntries()
+                                selectedTab = 1
+                            }) {
+                                Text("Log today's mood")
+                                    .font(AppTheme.captionFont)
+                                    .foregroundColor(AppTheme.primaryTextColor)
+                                    .tracking(2)
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 20)
+                                    .frame(maxWidth: .infinity)
+                                    .background(
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 24)
                                                 .fill(AppTheme.surfaceColor)
-                                                .overlay(
-                                                    Circle()
-                                                        .stroke(viewModel.textNote.isEmpty ? AppTheme.borderColor : AppTheme.primaryTextColor, lineWidth: viewModel.textNote.isEmpty ? 1 : 1.5)
-                                                )
-                                        )
-                                }
-                                
-                                Button(action: {
-                                    showVoiceNoteSheet = true
-                                }) {
-                                    Image(systemName: viewModel.voiceNoteURL == nil ? "mic" : "mic.fill")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(viewModel.voiceNoteURL == nil ? AppTheme.secondaryTextColor : AppTheme.primaryTextColor)
-                                        .frame(width: 44, height: 44)
-                                        .background(
-                                            Circle()
-                                                .fill(AppTheme.surfaceColor)
-                                                .overlay(
-                                                    Circle()
-                                                        .stroke(viewModel.voiceNoteURL == nil ? AppTheme.borderColor : AppTheme.primaryTextColor, lineWidth: viewModel.voiceNoteURL == nil ? 1 : 1.5)
-                                                )
-                                        )
-                                }
-                                }
-                                .padding(.horizontal)
-                                
-                                // LOG IT button - left aligned
-                                Button(action: {
-                                    viewModel.saveEntry(for: selectedDate)
-                                    // Navigate to calendar view
-                                    calendarViewModel.selectedDate = selectedDate
-                                    calendarViewModel.loadEntries()
-                                    selectedTab = 1
-                                }) {
-                                    Text("Log it")
-                                        .font(AppTheme.captionFont)
-                                        .foregroundColor(AppTheme.primaryTextColor)
-                                        .tracking(2)
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 12)
-                                        .background(
-                                            ZStack {
-                                                RoundedRectangle(cornerRadius: 4)
-                                                    .fill(AppTheme.surfaceColor)
-                                                if let mood = viewModel.selectedMood {
-                                                    RoundedRectangle(cornerRadius: 4)
-                                                        .fill(mood.lightTint)
-                                                }
-                                                RoundedRectangle(cornerRadius: 4)
-                                                    .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
+                                            if let mood = viewModel.selectedMood {
+                                                RoundedRectangle(cornerRadius: 24)
+                                                    .fill(mood.lightTint)
                                             }
-                                        )
-                                }
-                                .padding(.horizontal)
+                                            RoundedRectangle(cornerRadius: 24)
+                                                .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
+                                        }
+                                    )
                             }
+                            .padding(.horizontal)
                         }
+                        
+                        Spacer()
                     }
                     .padding(.vertical)
                 }
