@@ -12,8 +12,8 @@ struct TrafficLightView: View {
     let onSelect: (MoodState) -> Void
     
     var body: some View {
-        HStack(spacing: 32) {
-            ForEach(MoodState.allCases) { mood in
+        HStack(spacing: 24) {
+            ForEach(MoodState.allCases.reversed()) { mood in
                 Button(action: {
                     selectedMood = mood
                     onSelect(mood)
@@ -21,7 +21,7 @@ struct TrafficLightView: View {
                     VStack(spacing: 12) {
                         Circle()
                             .fill(mood.color)
-                            .frame(width: 64, height: 64)
+                            .frame(width: 44, height: 44)
                             .overlay(
                                 Circle()
                                     .stroke(selectedMood == mood ? AppTheme.primaryTextColor : Color.clear, lineWidth: 2)
@@ -34,7 +34,8 @@ struct TrafficLightView: View {
                 }
             }
         }
-        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
     }
 }
 

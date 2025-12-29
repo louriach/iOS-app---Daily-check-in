@@ -26,15 +26,10 @@ class CalendarViewModel: ObservableObject {
     
     @MainActor
     func loadEntriesAsync() async {
-        // Load entries asynchronously to prevent blocking UI during tab switch
-        // Use Task to move work off the main thread initially
-        let loadedEntries = await Task { @MainActor in
-            // Small delay to allow UI to render first
-            try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
-            return dataService.getAllMoodEntries()
-        }.value
-        
-        entries = loadedEntries
+        // Small delay to allow UI to render first
+        try? await Task.sleep(nanoseconds: 10_000_000) // 10ms
+        // Load entries on main thread (Core Data requires main thread)
+        entries = dataService.getAllMoodEntries()
     }
     
     func getMoodEntry(for date: Date) -> MoodEntry? {

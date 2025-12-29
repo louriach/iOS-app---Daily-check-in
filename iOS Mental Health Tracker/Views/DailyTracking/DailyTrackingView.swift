@@ -32,25 +32,28 @@ struct DailyTrackingView: View {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        // Date header
+                    VStack(alignment: .leading, spacing: 40) {
+                        // Date header - left aligned
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Today is \(dateFormatter.string(from: selectedDate)).")
-                                .font(AppTheme.captionFont)
+                            Text("\(dateFormatter.string(from: selectedDate)).")
+                                .font(.system(size: 16, design: .monospaced))
                                 .foregroundColor(AppTheme.secondaryTextColor)
                             
                             Text("How are you feeling?")
-                                .font(AppTheme.captionFont)
+                                .font(.system(size: 24, design: .monospaced))
                                 .foregroundColor(AppTheme.primaryTextColor)
                         }
                         .padding(.horizontal)
                         
+                        // Mood selection - left aligned
                         TrafficLightView(selectedMood: $viewModel.selectedMood) { mood in
                             viewModel.selectedMood = mood
                         }
                         
                         if viewModel.selectedMood != nil {
-                            HStack(spacing: 16) {
+                            VStack(alignment: .leading, spacing: 32) {
+                                // Note buttons - left aligned
+                                HStack(spacing: 16) {
                                 Button(action: {
                                     showTextNoteSheet = true
                                 }) {
@@ -84,39 +87,41 @@ struct DailyTrackingView: View {
                                                 )
                                         )
                                 }
-                            }
-                            .padding(.horizontal)
-                            
-                            Button(action: {
-                                viewModel.saveEntry(for: selectedDate)
-                                // Navigate to calendar view
-                                calendarViewModel.selectedDate = selectedDate
-                                calendarViewModel.loadEntries()
-                                selectedTab = 1
-                            }) {
-                                Text("LOG IT")
-                                    .font(AppTheme.captionFont)
-                                    .foregroundColor(AppTheme.primaryTextColor)
-                                    .tracking(2)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 12)
-                                    .background(
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .fill(AppTheme.surfaceColor)
-                                            if let mood = viewModel.selectedMood {
+                                }
+                                .padding(.horizontal)
+                                
+                                // LOG IT button - left aligned
+                                Button(action: {
+                                    viewModel.saveEntry(for: selectedDate)
+                                    // Navigate to calendar view
+                                    calendarViewModel.selectedDate = selectedDate
+                                    calendarViewModel.loadEntries()
+                                    selectedTab = 1
+                                }) {
+                                    Text("Log it")
+                                        .font(AppTheme.captionFont)
+                                        .foregroundColor(AppTheme.primaryTextColor)
+                                        .tracking(2)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        .background(
+                                            ZStack {
                                                 RoundedRectangle(cornerRadius: 4)
-                                                    .fill(mood.lightTint)
+                                                    .fill(AppTheme.surfaceColor)
+                                                if let mood = viewModel.selectedMood {
+                                                    RoundedRectangle(cornerRadius: 4)
+                                                        .fill(mood.lightTint)
+                                                }
+                                                RoundedRectangle(cornerRadius: 4)
+                                                    .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
                                             }
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
-                                        }
-                                    )
+                                        )
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
                         }
                     }
-                    .padding()
+                    .padding(.vertical)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -181,7 +186,7 @@ struct DailyTrackingView: View {
         }
     }
     
-    private let dateFormatter: DateFormatter = {
+    let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE d MMMM yyyy"
         return formatter

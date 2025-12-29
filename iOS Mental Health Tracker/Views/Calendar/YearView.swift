@@ -106,7 +106,6 @@ struct YearView: View {
                     let today = Date()
                     let currentYear = calendar.component(.year, from: today)
                     visibleYear = currentYear
-                    let startOfYear = calendar.date(from: DateComponents(year: currentYear, month: 1, day: 1)) ?? today
                     
                     // Calculate day of year (1-indexed, then convert to 0-indexed)
                     let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 1

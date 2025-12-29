@@ -59,7 +59,7 @@ class DailyTrackingViewModel: ObservableObject {
                 voiceNoteDuration: voiceNoteDuration > 0 ? voiceNoteDuration : nil
             )
         } else {
-            dataService.createMoodEntry(
+            _ = dataService.createMoodEntry(
                 date: date,
                 moodState: mood,
                 textNote: noteText.isEmpty ? nil : noteText,
