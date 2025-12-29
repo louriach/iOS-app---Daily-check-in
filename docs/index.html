@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mental Health Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+            background-color: #0D0D0D;
+            color: #F2F2F2;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 3rem;
+            letter-spacing: 0.05em;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 400;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .tagline {
+            font-size: 1.25rem;
+            color: #999;
+            margin-bottom: 4rem;
+            font-weight: 300;
+        }
+        
+        .device-frame {
+            margin: 3rem 0;
+            max-width: 100%;
+            border-radius: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+        
+        .device-frame img {
+            width: 100%;
+            height: auto;
+            border-radius: 2rem;
+            display: block;
+        }
+        
+        .cta-section {
+            margin: 4rem 0;
+        }
+        
+        .cta-text {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: #F2F2F2;
+        }
+        
+        .app-store-badge {
+            display: inline-block;
+            margin: 1rem;
+            transition: opacity 0.3s;
+        }
+        
+        .app-store-badge:hover {
+            opacity: 0.8;
+        }
+        
+        .app-store-badge img {
+            height: 60px;
+            width: auto;
+        }
+        
+        .features {
+            margin: 4rem 0;
+            text-align: left;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .feature {
+            margin-bottom: 2rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+        
+        .feature::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #999;
+        }
+        
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        footer a {
+            color: #999;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+        
+        footer a:hover {
+            color: #F2F2F2;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .tagline {
+                font-size: 1rem;
+            }
+            
+            .cta-text {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">Mental Health Tracker</div>
+        
+        <h1>Track your mood,<br>one day at a time</h1>
+        
+        <p class="tagline">A minimal daily check-in app<br>designed for reflection and awareness</p>
+        
+        <div class="device-frame">
+            <!-- Placeholder for app screenshot -->
+            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); width: 100%; aspect-ratio: 9/19.5; border-radius: 2rem; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.9rem;">
+                App Screenshot
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            <p class="cta-text">Stay centered. Keep tracking.</p>
+            <div>
+                <a href="#" class="app-store-badge">
+                    <img src="https://tools.applemediaservices.com/api/badges/download-on-the-app-store/black/en-us?size=250x83&releaseDate=1276560000" alt="Download on the App Store">
+                </a>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature">Daily mood check-ins with visual tracking</div>
+            <div class="feature">Add text and voice notes to your entries</div>
+            <div class="feature">Year view calendar to see your journey</div>
+            <div class="feature">Minimal design focused on clarity</div>
+            <div class="feature">Private and secure with iCloud sync</div>
+        </div>
+        
+        <footer>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="https://www.twitter.com/disco_lu/">By @disco_lu</a>
+            <span>© 2025</span>
+        </footer>
+    </div>
+</body>
+</html>
+
