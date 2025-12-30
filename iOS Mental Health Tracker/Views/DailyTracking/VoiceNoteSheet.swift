@@ -37,6 +37,7 @@ struct VoiceNoteSheet: View {
                     }
                 }
                 .padding()
+                .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
             }
             .navigationTitle("VOICE NOTE")
             .navigationBarTitleDisplayMode(.inline)
@@ -66,6 +67,7 @@ struct VoiceNoteSheet: View {
                 }
             }
             .preferredColorScheme(.dark)
+            .navigationViewStyle(.stack) // Force single column on iPad
             .alert("DELETE RECORDING?", isPresented: $showDeleteConfirmation) {
                 Button("CANCEL", role: .cancel) { }
                 Button("DELETE", role: .destructive) {

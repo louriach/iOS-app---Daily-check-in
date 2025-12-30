@@ -58,10 +58,12 @@ struct NotificationTimePickerView: View {
                     }
                     .padding(.horizontal)
                 }
+                .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
             }
             .navigationTitle("SETUP")
             .navigationBarTitleDisplayMode(.inline)
             .preferredColorScheme(.dark)
+            .navigationViewStyle(.stack) // Force single column on iPad
         }
     }
 }

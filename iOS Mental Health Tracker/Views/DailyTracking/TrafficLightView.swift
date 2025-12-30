@@ -79,6 +79,7 @@ struct TrafficLightView<NoteButtons: View>: View {
             }
         }
         .padding(.horizontal)
+        .frame(maxWidth: 600) // Center on iPad, full width on iPhone
     }
 }
 

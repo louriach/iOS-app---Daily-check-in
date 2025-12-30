@@ -31,104 +31,109 @@ struct DailyTrackingView: View {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
-                ScrollView {
-                    VStack(spacing: 40) {
-                        Spacer()
-                        
-                        // Date header - centered
-                        VStack(spacing: 8) {
-                            Text("\(dateFormatter.string(from: selectedDate)).")
-                                .font(.system(size: 16, design: .monospaced))
-                                .foregroundColor(AppTheme.secondaryTextColor)
+                HStack {
+                    Spacer()
+                    ScrollView {
+                        VStack(spacing: 40) {
+                            Spacer()
                             
-                            Text("How are you feeling?")
-                                .font(.system(size: 24, design: .monospaced))
-                                .foregroundColor(AppTheme.primaryTextColor)
-                        }
-                        .padding(.horizontal)
-                        
-                        // Mood selection - full width, vertical stack
-                        TrafficLightView(
-                            selectedMood: $viewModel.selectedMood,
-                            onSelect: { mood in
-                                viewModel.selectedMood = mood
-                            },
-                            noteButtons: {
-                                HStack(spacing: 12) {
-                                    if let mood = viewModel.selectedMood {
-                                        Button(action: {
-                                            showTextNoteSheet = true
-                                        }) {
-                                            Image(systemName: viewModel.textNote.isEmpty ? "text.bubble" : "text.bubble.fill")
-                                                .font(.system(size: 20))
-                                                .foregroundColor(mood.unpressedTextColor)
-                                                .frame(width: 44, height: 44)
-                                                .background(
-                                                    Circle()
-                                                        .fill(mood.color.opacity(0.2))
-                                                        .overlay(
-                                                            Circle()
-                                                                .stroke(viewModel.textNote.isEmpty ? mood.borderColor : mood.unpressedTextColor, lineWidth: viewModel.textNote.isEmpty ? 1 : 1.5)
-                                                        )
-                                                )
-                                        }
-                                        
-                                        Button(action: {
-                                            showVoiceNoteSheet = true
-                                        }) {
-                                            Image(systemName: viewModel.voiceNoteURL == nil ? "mic" : "mic.fill")
-                                                .font(.system(size: 20))
-                                                .foregroundColor(mood.unpressedTextColor)
-                                                .frame(width: 44, height: 44)
-                                                .background(
-                                                    Circle()
-                                                        .fill(mood.color.opacity(0.2))
-                                                        .overlay(
-                                                            Circle()
-                                                                .stroke(viewModel.voiceNoteURL == nil ? mood.borderColor : mood.unpressedTextColor, lineWidth: viewModel.voiceNoteURL == nil ? 1 : 1.5)
-                                                        )
-                                                )
+                            // Date header - centered
+                            VStack(spacing: 8) {
+                                Text("\(dateFormatter.string(from: selectedDate)).")
+                                    .font(.system(size: 16, design: .monospaced))
+                                    .foregroundColor(AppTheme.secondaryTextColor)
+                                
+                                Text("How are you feeling?")
+                                    .font(.system(size: 24, design: .monospaced))
+                                    .foregroundColor(AppTheme.primaryTextColor)
+                            }
+                            .padding(.horizontal)
+                            
+                            // Mood selection - full width, vertical stack
+                            TrafficLightView(
+                                selectedMood: $viewModel.selectedMood,
+                                onSelect: { mood in
+                                    viewModel.selectedMood = mood
+                                },
+                                noteButtons: {
+                                    HStack(spacing: 12) {
+                                        if let mood = viewModel.selectedMood {
+                                            Button(action: {
+                                                showTextNoteSheet = true
+                                            }) {
+                                                Image(systemName: viewModel.textNote.isEmpty ? "text.bubble" : "text.bubble.fill")
+                                                    .font(.system(size: 20))
+                                                    .foregroundColor(mood.unpressedTextColor)
+                                                    .frame(width: 44, height: 44)
+                                                    .background(
+                                                        Circle()
+                                                            .fill(mood.color.opacity(0.2))
+                                                            .overlay(
+                                                                Circle()
+                                                                    .stroke(viewModel.textNote.isEmpty ? mood.borderColor : mood.unpressedTextColor, lineWidth: viewModel.textNote.isEmpty ? 1 : 1.5)
+                                                            )
+                                                    )
+                                            }
+                                            
+                                            Button(action: {
+                                                showVoiceNoteSheet = true
+                                            }) {
+                                                Image(systemName: viewModel.voiceNoteURL == nil ? "mic" : "mic.fill")
+                                                    .font(.system(size: 20))
+                                                    .foregroundColor(mood.unpressedTextColor)
+                                                    .frame(width: 44, height: 44)
+                                                    .background(
+                                                        Circle()
+                                                            .fill(mood.color.opacity(0.2))
+                                                            .overlay(
+                                                                Circle()
+                                                                    .stroke(viewModel.voiceNoteURL == nil ? mood.borderColor : mood.unpressedTextColor, lineWidth: viewModel.voiceNoteURL == nil ? 1 : 1.5)
+                                                            )
+                                                    )
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        )
-                        
-                        if viewModel.selectedMood != nil {
-                            // LOG IT button - centered
-                            Button(action: {
-                                viewModel.saveEntry(for: selectedDate)
-                                // Navigate to calendar view
-                                calendarViewModel.selectedDate = selectedDate
-                                calendarViewModel.loadEntries()
-                                selectedTab = 1
-                            }) {
-                                Text("Log today's mood")
-                                    .font(AppTheme.captionFont)
-                                    .foregroundColor(AppTheme.primaryTextColor)
-                                    .tracking(2)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 20)
-                                    .frame(maxWidth: .infinity)
-                                    .background(
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 24)
-                                                .fill(AppTheme.surfaceColor)
-                                            if let mood = viewModel.selectedMood {
+                            )
+                            
+                            if viewModel.selectedMood != nil {
+                                // LOG IT button - centered
+                                Button(action: {
+                                    viewModel.saveEntry(for: selectedDate)
+                                    // Navigate to calendar view
+                                    calendarViewModel.selectedDate = selectedDate
+                                    calendarViewModel.loadEntries()
+                                    selectedTab = 1
+                                }) {
+                                    Text("Log today's mood")
+                                        .font(AppTheme.captionFont)
+                                        .foregroundColor(AppTheme.primaryTextColor)
+                                        .tracking(2)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 20)
+                                        .frame(maxWidth: .infinity)
+                                        .background(
+                                            ZStack {
                                                 RoundedRectangle(cornerRadius: 24)
-                                                    .fill(mood.lightTint)
+                                                    .fill(AppTheme.surfaceColor)
+                                                if let mood = viewModel.selectedMood {
+                                                    RoundedRectangle(cornerRadius: 24)
+                                                        .fill(mood.lightTint)
+                                                }
+                                                RoundedRectangle(cornerRadius: 24)
+                                                    .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
                                             }
-                                            RoundedRectangle(cornerRadius: 24)
-                                                .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
-                                        }
-                                    )
+                                        )
+                                }
+                                .padding(.horizontal)
                             }
-                            .padding(.horizontal)
+                            
+                            Spacer()
                         }
-                        
-                        Spacer()
+                        .padding(.vertical)
                     }
-                    .padding(.vertical)
+                    .frame(maxWidth: 600) // Constrain width on iPad
+                    Spacer()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
@@ -150,46 +155,48 @@ struct DailyTrackingView: View {
                 }
             }
             .preferredColorScheme(.dark)
-            .sheet(isPresented: $showDatePicker) {
-                NavigationView {
-                    ZStack {
-                        AppTheme.backgroundColor.ignoresSafeArea()
-                        
-                        VStack {
-                            DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                                .datePickerStyle(.wheel)
-                                .font(AppTheme.captionFont)
-                                .labelsHidden()
-                                .padding()
-                        }
-                        .navigationTitle("SELECT DATE")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("DONE") {
-                                    showDatePicker = false
-                                }
-                                .font(AppTheme.captionFont)
-                                .foregroundColor(AppTheme.primaryTextColor)
-                            }
-                        }
-                        .preferredColorScheme(.dark)
+        }
+        .navigationViewStyle(.stack) // Force single column on iPad - must be on NavigationView
+        .sheet(isPresented: $showDatePicker) {
+            NavigationView {
+                ZStack {
+                    AppTheme.backgroundColor.ignoresSafeArea()
+                    
+                    VStack {
+                        DatePicker("", selection: $selectedDate, displayedComponents: .date)
+                            .datePickerStyle(.wheel)
+                            .font(AppTheme.captionFont)
+                            .labelsHidden()
+                            .padding()
                     }
+                    .navigationTitle("SELECT DATE")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("DONE") {
+                                showDatePicker = false
+                            }
+                            .font(AppTheme.captionFont)
+                            .foregroundColor(AppTheme.primaryTextColor)
+                        }
+                    }
+                    .preferredColorScheme(.dark)
                 }
             }
-            .onChange(of: selectedDate) { oldValue, newDate in
-                viewModel.loadEntry(for: newDate)
-            }
-            .sheet(isPresented: $showTextNoteSheet) {
-                TextNoteSheet(textNote: $viewModel.textNote)
-            }
-            .sheet(isPresented: $showVoiceNoteSheet) {
-                VoiceNoteSheet(
-                    audioService: audioService,
-                    voiceNoteURL: $viewModel.voiceNoteURL,
-                    voiceNoteDuration: $viewModel.voiceNoteDuration
-                )
-            }
+            .navigationViewStyle(.stack) // Force single column on iPad
+        }
+        .onChange(of: selectedDate) { oldValue, newDate in
+            viewModel.loadEntry(for: newDate)
+        }
+        .sheet(isPresented: $showTextNoteSheet) {
+            TextNoteSheet(textNote: $viewModel.textNote)
+        }
+        .sheet(isPresented: $showVoiceNoteSheet) {
+            VoiceNoteSheet(
+                audioService: audioService,
+                voiceNoteURL: $viewModel.voiceNoteURL,
+                voiceNoteDuration: $viewModel.voiceNoteDuration
+            )
         }
     }
     

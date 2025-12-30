@@ -21,6 +21,7 @@ struct CalendarGridView: View {
                     await viewModel.loadEntriesAsync()
                 }
         }
+        .navigationViewStyle(.stack) // Force single column on iPad - must be on NavigationView
     }
 }
 

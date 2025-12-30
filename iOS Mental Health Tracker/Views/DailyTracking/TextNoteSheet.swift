@@ -56,6 +56,7 @@ struct TextNoteSheet: View {
                         .frame(maxWidth: .infinity, alignment: .trailing)
                 }
                 .padding()
+                .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
             }
             .navigationTitle("TEXT NOTE")
             .navigationBarTitleDisplayMode(.inline)
@@ -69,6 +70,7 @@ struct TextNoteSheet: View {
                 }
             }
             .preferredColorScheme(.dark)
+            .navigationViewStyle(.stack) // Force single column on iPad
         }
     }
 }
