@@ -10,6 +10,7 @@ import SwiftUI
 struct NotificationTimePickerView: View {
     @ObservedObject var settings: NotificationSettings
     @Binding var isPresented: Bool
+    @State private var showPermissionSheet = false
     
     var body: some View {
         NavigationView {
@@ -32,14 +33,7 @@ struct NotificationTimePickerView: View {
                         .minimalCard()
                     
                     Button(action: {
-                        Task {
-                            let authorized = await NotificationService.shared.requestAuthorization()
-                            if authorized {
-                                NotificationService.shared.scheduleDailyNotification(at: settings.notificationTime)
-                                settings.hasCompletedOnboarding = true
-                                isPresented = false
-                            }
-                        }
+                        showPermissionSheet = true
                     }) {
                         Text("CONTINUE")
                             .font(AppTheme.captionFont)
@@ -64,6 +58,36 @@ struct NotificationTimePickerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .preferredColorScheme(.dark)
             .navigationViewStyle(.stack) // Force single column on iPad
+            .sheet(isPresented: $showPermissionSheet) {
+                NotificationPermissionSheet(
+                    isPresented: $showPermissionSheet,
+                    onAccept: {
+                        Task {
+                            let authorized = await NotificationService.shared.requestAuthorization()
+                            if authorized {
+                                NotificationService.shared.scheduleDailyNotification(at: settings.notificationTime)
+                                settings.hasCompletedOnboarding = true
+                                isPresented = false
+                            } else {
+                                // User declined native permission - show message that notifications are required
+                                // For now, we'll still complete onboarding but they won't get notifications
+                                // You could show an alert here if you want to be more strict
+                                settings.hasCompletedOnboarding = true
+                                isPresented = false
+                            }
+                        }
+                    },
+                    onDecline: {
+                        // User declined - they can't use the app without notifications
+                        // You could show an alert here explaining that notifications are required
+                        // For now, we'll allow them to continue but they won't get notifications
+                        settings.hasCompletedOnboarding = true
+                        isPresented = false
+                    }
+                )
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
         }
     }
 }
