@@ -29,7 +29,8 @@ class AudioRecordingService: NSObject, ObservableObject {
     
     private func setupAudioSession() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default)
+            // Use options that work better on iPad - defaultToSpeaker ensures audio plays through speakers
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Failed to set up audio session: \(error)")
@@ -51,8 +52,10 @@ class AudioRecordingService: NSObject, ObservableObject {
     func startRecording() -> URL? {
         guard !isRecording else { return nil }
         
-        // Ensure audio session is active
+        // Ensure audio session is active and properly configured
         do {
+            // Reconfigure audio session for recording with iPad-friendly options
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Failed to activate audio session: \(error)")
@@ -112,27 +115,32 @@ class AudioRecordingService: NSObject, ObservableObject {
     }
     
     func stopRecording() {
-        guard let recorder = audioRecorder else { return }
+        guard let recorder = audioRecorder else {
+            isRecording = false
+            return
+        }
         
         let url = recorder.url
         recorder.stop()
         
-        // Small delay to ensure file is written
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            // Verify the file was created
-            if FileManager.default.fileExists(atPath: url.path) {
-                print("Recording saved to: \(url.path)")
-                self?.recordingURL = url
-            } else {
-                print("Warning: Recording file not found at: \(url.path)")
-                self?.recordingURL = nil
+        // Ensure we're on main thread for state updates
+        DispatchQueue.main.async { [weak self] in
+            self?.audioRecorder = nil
+            self?.recordingTimer?.invalidate()
+            self?.recordingTimer = nil
+            self?.isRecording = false
+            
+            // Verify the file was created with a small delay
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                if FileManager.default.fileExists(atPath: url.path) {
+                    print("Recording saved to: \(url.path)")
+                    self?.recordingURL = url
+                } else {
+                    print("Warning: Recording file not found at: \(url.path)")
+                    self?.recordingURL = nil
+                }
             }
         }
-        
-        audioRecorder = nil
-        recordingTimer?.invalidate()
-        recordingTimer = nil
-        isRecording = false
     }
     
     func getRecordingURL() -> URL? {
@@ -157,22 +165,36 @@ class AudioRecordingService: NSObject, ObservableObject {
     
     func playRecording(url: URL) {
         guard !isRecording else { return }
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            print("Error: Audio file does not exist at \(url.path)")
+            return
+        }
         
         // Stop any current playback
         stopPlayback()
         
         do {
             // Use playAndRecord to allow both playback and recording
-            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker])
+            // defaultToSpeaker ensures audio plays through speakers on iPad
+            try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
             try AVAudioSession.sharedInstance().setActive(true)
             
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.delegate = self
-            audioPlayer?.prepareToPlay()
-            audioPlayer?.play()
+            guard audioPlayer?.prepareToPlay() == true else {
+                print("Failed to prepare audio player")
+                return
+            }
             
-            isPlaying = true
-            playbackTime = 0
+            guard audioPlayer?.play() == true else {
+                print("Failed to start playback")
+                return
+            }
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.isPlaying = true
+                self?.playbackTime = 0
+            }
             
             playbackTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
                 guard let self = self, let player = self.audioPlayer else {
@@ -187,7 +209,10 @@ class AudioRecordingService: NSObject, ObservableObject {
                 }
             }
         } catch {
-            print("Failed to play recording: \(error)")
+            print("Failed to play recording: \(error.localizedDescription)")
+            DispatchQueue.main.async { [weak self] in
+                self?.isPlaying = false
+            }
         }
     }
     

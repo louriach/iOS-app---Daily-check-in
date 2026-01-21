@@ -68,6 +68,7 @@ struct UnifiedCircleView: View {
                 Text(String(format: "%.1f", recordingDuration))
                     .font(AppTheme.captionFont)
                     .foregroundColor(AppTheme.moodRed)
+                    .allowsHitTesting(false)
             } else if hasRecording {
                 if isPlaying {
                     // Playing: show stop icon
@@ -78,19 +79,28 @@ struct UnifiedCircleView: View {
                             .font(.system(size: 32))
                             .foregroundColor(AppTheme.primaryTextColor)
                     }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 } else {
                     // Recorded but not playing: show play button
-                    Button(action: onPlay) {
+                    Button(action: {
+                        onPlay()
+                    }) {
                         Image(systemName: "play.fill")
                             .font(.system(size: 32))
                             .foregroundColor(AppTheme.primaryTextColor)
                     }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
                 }
             } else {
                 // Idle: show microphone icon
                 Image(systemName: "mic.fill")
                     .font(.system(size: 32))
                     .foregroundColor(AppTheme.secondaryTextColor)
+                    .allowsHitTesting(false)
             }
         }
         .frame(width: 120, height: 120)

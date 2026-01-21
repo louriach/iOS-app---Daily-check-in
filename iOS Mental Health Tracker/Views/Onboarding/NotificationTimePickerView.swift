@@ -17,47 +17,52 @@ struct NotificationTimePickerView: View {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
-                VStack(spacing: 40) {
-                    Text("SET REMINDER TIME")
-                        .font(AppTheme.captionFont)
-                        .foregroundColor(AppTheme.secondaryTextColor)
-                        .tracking(2)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    
-                    DatePicker("", selection: $settings.notificationTime, displayedComponents: .hourAndMinute)
-                        .datePickerStyle(.wheel)
-                        .font(AppTheme.captionFont)
-                        .labelsHidden()
-                        .padding()
-                        .minimalCard()
-                    
-                    Button(action: {
-                        showPermissionSheet = true
-                    }) {
-                        Text("CONTINUE")
+                HStack {
+                    Spacer()
+                    VStack(spacing: 40) {
+                        Text("SET REMINDER TIME")
                             .font(AppTheme.captionFont)
-                            .foregroundColor(AppTheme.primaryTextColor)
+                            .foregroundColor(AppTheme.secondaryTextColor)
                             .tracking(2)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(AppTheme.accentColor)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .stroke(AppTheme.borderColor, lineWidth: 1)
-                                    )
-                            )
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        
+                        DatePicker("", selection: $settings.notificationTime, displayedComponents: .hourAndMinute)
+                            .datePickerStyle(.wheel)
+                            .font(AppTheme.captionFont)
+                            .labelsHidden()
+                            .padding()
+                            .minimalCard()
+                        
+                        Button(action: {
+                            showPermissionSheet = true
+                        }) {
+                            Text("CONTINUE")
+                                .font(AppTheme.captionFont)
+                                .foregroundColor(AppTheme.primaryTextColor)
+                                .tracking(2)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(AppTheme.accentColor)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 4)
+                                                .stroke(AppTheme.borderColor, lineWidth: 1)
+                                        )
+                                )
+                        }
+                        .padding(.horizontal)
                     }
-                    .padding(.horizontal)
+                    .frame(maxWidth: 600) // Constrain width on iPad
+                    Spacer()
                 }
-                .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
+                .frame(maxWidth: .infinity)
             }
             .navigationTitle("SETUP")
             .navigationBarTitleDisplayMode(.inline)
             .preferredColorScheme(.dark)
-            .navigationViewStyle(.stack) // Force single column on iPad
+            .frame(maxWidth: .infinity)
             .sheet(isPresented: $showPermissionSheet) {
                 NotificationPermissionSheet(
                     isPresented: $showPermissionSheet,
@@ -89,6 +94,8 @@ struct NotificationTimePickerView: View {
                 .presentationDragIndicator(.visible)
             }
         }
+        .navigationViewStyle(.stack) // Force single column on iPad - must be on NavigationView
+        .frame(maxWidth: .infinity)
     }
 }
 

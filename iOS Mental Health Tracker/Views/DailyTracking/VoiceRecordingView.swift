@@ -38,8 +38,10 @@ struct VoiceRecordingView: View {
                         playbackTime: audioService.playbackTime,
                         totalDuration: recordingDuration,
                         onPlay: {
-                            if let url = recordingURL {
+                            if let url = recordingURL, FileManager.default.fileExists(atPath: url.path) {
                                 audioService.playRecording(url: url)
+                            } else {
+                                print("Error: Cannot play - recording URL is nil or file doesn't exist")
                             }
                         },
                         onStop: {
@@ -53,31 +55,38 @@ struct VoiceRecordingView: View {
                     
                     // Apply gesture when idle (to start recording) or during recording (to stop on release)
                     // But NOT when there's a saved recording and we're not recording (so play button works)
-                    if !hasRecording || audioService.isRecording {
-                        circleView
-                            .contentShape(Rectangle())
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { _ in
-                                        if !isPressing && !audioService.isRecording {
-                                            isPressing = true
-                                            recordingURL = audioService.startRecording()
-                                        }
-                                    }
-                                    .onEnded { _ in
-                                        isPressing = false
-                                        if audioService.isRecording {
-                                            audioService.stopRecording()
-                                            // Small delay to ensure file is saved
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                                recordingURL = audioService.getRecordingURL()
-                                                recordingDuration = audioService.recordingDuration
+                    Group {
+                        if !hasRecording || audioService.isRecording {
+                            circleView
+                                .contentShape(Rectangle())
+                                .gesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { _ in
+                                            if !isPressing && !audioService.isRecording && hasPermission {
+                                                isPressing = true
+                                                recordingURL = audioService.startRecording()
+                                                if recordingURL == nil {
+                                                    // Recording failed to start
+                                                    isPressing = false
+                                                }
                                             }
                                         }
-                                    }
-                            )
-                    } else {
-                        circleView
+                                        .onEnded { _ in
+                                            isPressing = false
+                                            if audioService.isRecording {
+                                                audioService.stopRecording()
+                                                // Small delay to ensure file is saved
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                                    recordingURL = audioService.getRecordingURL()
+                                                    recordingDuration = audioService.recordingDuration
+                                                }
+                                            }
+                                        }
+                                )
+                        } else {
+                            // When there's a recording, ensure the play button is fully interactive
+                            circleView
+                        }
                     }
                     
                     // Always render text area to reserve space and prevent layout shifts

@@ -33,7 +33,7 @@ struct NotificationPermissionSheet: View {
                     isPresented = false
                     onAccept()
                 }) {
-                    Text("Yes, Enable Notifications")
+                    Text("Yes, enable notifications")
                         .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.primaryTextColor)
                         .tracking(2)
