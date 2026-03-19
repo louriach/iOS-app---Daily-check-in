@@ -13,10 +13,10 @@ struct NotificationTimePickerView: View {
     @State private var showPermissionSheet = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
-                
+
                 HStack {
                     Spacer()
                     VStack(spacing: 40) {
@@ -26,14 +26,14 @@ struct NotificationTimePickerView: View {
                             .tracking(2)
                             .multilineTextAlignment(.center)
                             .padding()
-                        
+
                         DatePicker("", selection: $settings.notificationTime, displayedComponents: .hourAndMinute)
                             .datePickerStyle(.wheel)
                             .font(AppTheme.captionFont)
                             .labelsHidden()
                             .padding()
                             .minimalCard()
-                        
+
                         Button(action: {
                             showPermissionSheet = true
                         }) {
@@ -92,9 +92,9 @@ struct NotificationTimePickerView: View {
                 )
                 .presentationDetents([.medium])
                 .presentationDragIndicator(.visible)
+                .presentationCompactAdaptation(.sheet) // Ensure half-sheet renders on iPad, not a popover
             }
         }
-        .navigationViewStyle(.stack) // Force single column on iPad - must be on NavigationView
         .frame(maxWidth: .infinity)
     }
 }
