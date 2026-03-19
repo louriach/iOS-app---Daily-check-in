@@ -182,12 +182,15 @@ struct DailyTrackingView: View {
                 }
                 .preferredColorScheme(.dark)
             }
+            .presentationDetents([.medium])
+            .presentationCompactAdaptation(.sheet) // Ensure half-sheet on iPad, not a popover
         }
         .onChange(of: selectedDate) { oldValue, newDate in
             viewModel.loadEntry(for: newDate)
         }
         .sheet(isPresented: $showTextNoteSheet) {
             TextNoteSheet(textNote: $viewModel.textNote)
+                .presentationCompactAdaptation(.sheet) // Ensure sheet on iPad, not a popover
         }
         .sheet(isPresented: $showVoiceNoteSheet) {
             VoiceNoteSheet(
@@ -195,6 +198,7 @@ struct DailyTrackingView: View {
                 voiceNoteURL: $viewModel.voiceNoteURL,
                 voiceNoteDuration: $viewModel.voiceNoteDuration
             )
+            .presentationCompactAdaptation(.sheet) // Ensure sheet on iPad, not a popover
         }
     }
     

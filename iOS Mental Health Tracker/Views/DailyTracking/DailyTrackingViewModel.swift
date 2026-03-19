@@ -26,7 +26,7 @@ class DailyTrackingViewModel: ObservableObject {
     func loadEntry(for date: Date) {
         if let entry = dataService.getMoodEntry(for: date) {
             existingEntry = entry
-            selectedMood = MoodState(rawValue: entry.moodState ?? "red")
+            selectedMood = MoodState(rawValue: entry.moodState ?? MoodState.red.rawValue)
             textNote = entry.textNote ?? ""
             if let urlString = entry.voiceNoteURL, !urlString.isEmpty {
                 voiceNoteURL = URL(fileURLWithPath: urlString)
