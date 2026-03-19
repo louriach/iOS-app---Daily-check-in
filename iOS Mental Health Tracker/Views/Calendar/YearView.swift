@@ -294,10 +294,10 @@ struct YearEntrySheet: View {
     }()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: 24) {
                         if let entry = viewModel.getMoodEntry(for: date) {

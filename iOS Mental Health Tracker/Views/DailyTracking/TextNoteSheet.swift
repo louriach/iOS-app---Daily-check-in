@@ -12,10 +12,10 @@ struct TextNoteSheet: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
-                
+
                 VStack(alignment: .leading, spacing: 16) {
                     Text("TEXT NOTE")
                         .font(AppTheme.captionFont)
@@ -70,7 +70,6 @@ struct TextNoteSheet: View {
                 }
             }
             .preferredColorScheme(.dark)
-            .navigationViewStyle(.stack) // Force single column on iPad
         }
     }
 }

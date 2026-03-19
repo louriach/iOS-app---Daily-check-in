@@ -15,7 +15,7 @@ struct VoiceNoteSheet: View {
     @State private var showDeleteConfirmation = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
@@ -67,7 +67,6 @@ struct VoiceNoteSheet: View {
                 }
             }
             .preferredColorScheme(.dark)
-            .navigationViewStyle(.stack) // Force single column on iPad
             .alert("DELETE RECORDING?", isPresented: $showDeleteConfirmation) {
                 Button("CANCEL", role: .cancel) { }
                 Button("DELETE", role: .destructive) {
