@@ -54,9 +54,10 @@ class DataService: ObservableObject {
     }
     
     func deleteMoodEntry(_ entry: MoodEntry) {
-        // Delete voice note file if it exists
-        if let voiceNoteURL = entry.voiceNoteURL {
-            let fileURL = URL(fileURLWithPath: voiceNoteURL)
+        // Delete the voice note file — resolve via DailyTrackingViewModel so
+        // bare filenames and legacy absolute paths are both handled correctly.
+        if let stored = entry.voiceNoteURL, !stored.isEmpty {
+            let fileURL = DailyTrackingViewModel.resolveVoiceNoteURL(from: stored)
             try? FileManager.default.removeItem(at: fileURL)
         }
         

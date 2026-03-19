@@ -399,7 +399,7 @@ struct VoiceNotePlaybackView: View {
     let duration: Double
     
     private var voiceNoteURL: URL {
-        URL(fileURLWithPath: voiceNoteURLString)
+        DailyTrackingViewModel.resolveVoiceNoteURL(from: voiceNoteURLString)
     }
     
     private var fileExists: Bool {

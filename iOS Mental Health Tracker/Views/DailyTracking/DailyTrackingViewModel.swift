@@ -29,7 +29,10 @@ class DailyTrackingViewModel: ObservableObject {
             selectedMood = MoodState(rawValue: entry.moodState ?? MoodState.red.rawValue)
             textNote = entry.textNote ?? ""
             if let urlString = entry.voiceNoteURL, !urlString.isEmpty {
-                voiceNoteURL = URL(fileURLWithPath: urlString)
+                // Resolve against the current Documents directory so paths survive
+                // app updates (iOS reassigns the container UUID on each update,
+                // invalidating any stored absolute path).
+                voiceNoteURL = Self.resolveVoiceNoteURL(from: urlString)
                 voiceNoteDuration = entry.voiceNoteDuration
             } else {
                 voiceNoteURL = nil
@@ -48,7 +51,9 @@ class DailyTrackingViewModel: ObservableObject {
         guard let mood = selectedMood else { return }
         
         let noteText = textNote.count > 240 ? String(textNote.prefix(240)) : textNote
-        let voiceURLString = voiceNoteURL?.path
+        // Store only the filename, not the full path — the container UUID changes
+        // on every app update, making absolute paths stale.
+        let voiceURLString = voiceNoteURL?.lastPathComponent
         
         if let entry = existingEntry {
             dataService.updateMoodEntry(
@@ -68,6 +73,13 @@ class DailyTrackingViewModel: ObservableObject {
             )
         }
     }
-    
+
+    // Rebuild a full URL from whatever is stored — handles both legacy absolute
+    // paths and the current bare-filename format.
+    static func resolveVoiceNoteURL(from stored: String) -> URL {
+        let filename = URL(fileURLWithPath: stored).lastPathComponent
+        let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        return documents.appendingPathComponent(filename)
+    }
 }
 
