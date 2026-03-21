@@ -11,7 +11,7 @@ struct CalendarGridView: View {
     @ObservedObject var viewModel: CalendarViewModel
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             YearView(viewModel: viewModel, selectedDate: $viewModel.selectedDate)
                 .background(AppTheme.backgroundColor.ignoresSafeArea())
                 .navigationTitle("CALENDAR")
@@ -21,7 +21,6 @@ struct CalendarGridView: View {
                     await viewModel.loadEntriesAsync()
                 }
         }
-        .navigationViewStyle(.stack) // Force single column on iPad - must be on NavigationView
     }
 }
 

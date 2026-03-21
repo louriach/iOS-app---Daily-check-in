@@ -40,28 +40,24 @@ class DataService: ObservableObject {
         return entry
     }
     
-    func updateMoodEntry(_ entry: MoodEntry, moodState: MoodState? = nil, textNote: String? = nil, voiceNoteURL: String? = nil, voiceNoteDuration: Double? = nil) {
+    func updateMoodEntry(_ entry: MoodEntry, moodState: MoodState? = nil, textNote: String?, voiceNoteURL: String?, voiceNoteDuration: Double?) {
         if let moodState = moodState {
             entry.moodState = moodState.rawValue
         }
-        if let textNote = textNote {
-            entry.textNote = textNote
-        }
-        if let voiceNoteURL = voiceNoteURL {
-            entry.voiceNoteURL = voiceNoteURL
-        }
-        if let voiceNoteDuration = voiceNoteDuration {
-            entry.voiceNoteDuration = voiceNoteDuration
-        }
+        // Allow nil to explicitly clear these fields
+        entry.textNote = textNote
+        entry.voiceNoteURL = voiceNoteURL
+        entry.voiceNoteDuration = voiceNoteDuration ?? 0
         entry.updatedAt = Date()
-        
+
         saveContext()
     }
     
     func deleteMoodEntry(_ entry: MoodEntry) {
-        // Delete voice note file if it exists
-        if let voiceNoteURL = entry.voiceNoteURL {
-            let fileURL = URL(fileURLWithPath: voiceNoteURL)
+        // Delete the voice note file — resolve via DailyTrackingViewModel so
+        // bare filenames and legacy absolute paths are both handled correctly.
+        if let stored = entry.voiceNoteURL, !stored.isEmpty {
+            let fileURL = DailyTrackingViewModel.resolveVoiceNoteURL(from: stored)
             try? FileManager.default.removeItem(at: fileURL)
         }
         
@@ -97,13 +93,13 @@ class DataService: ObservableObject {
     }
     
     private func saveContext() {
-        if viewContext.hasChanges {
-            do {
-                try viewContext.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
+        guard viewContext.hasChanges else { return }
+        do {
+            try viewContext.save()
+        } catch {
+            // Log the error rather than crashing — data will be retried on next save
+            let nsError = error as NSError
+            print("CoreData save error: \(nsError), \(nsError.userInfo)")
         }
     }
 }

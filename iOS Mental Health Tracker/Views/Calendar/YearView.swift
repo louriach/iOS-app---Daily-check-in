@@ -38,8 +38,10 @@ struct YearView: View {
             let availableWidth = geometry.size.width - (padding * 2)
             
             // Calculate dot size to fill horizontal space: (width - gaps) / 7
+            // Clamp to 0 — GeometryReader briefly reports width=0 during layout,
+            // which produces a negative dotSize and an "invalid frame dimension" warning.
             let totalGapWidth = gap * CGFloat(columnsPerRow - 1)
-            let dotSize = (availableWidth - totalGapWidth) / CGFloat(columnsPerRow)
+            let dotSize = max(0, (availableWidth - totalGapWidth) / CGFloat(columnsPerRow))
             
             ScrollViewReader { proxy in
                 ScrollView {
@@ -294,10 +296,10 @@ struct YearEntrySheet: View {
     }()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: 24) {
                         if let entry = viewModel.getMoodEntry(for: date) {
@@ -397,7 +399,7 @@ struct VoiceNotePlaybackView: View {
     let duration: Double
     
     private var voiceNoteURL: URL {
-        URL(fileURLWithPath: voiceNoteURLString)
+        DailyTrackingViewModel.resolveVoiceNoteURL(from: voiceNoteURLString)
     }
     
     private var fileExists: Bool {

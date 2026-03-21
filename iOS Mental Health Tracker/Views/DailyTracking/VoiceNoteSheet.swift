@@ -15,7 +15,7 @@ struct VoiceNoteSheet: View {
     @State private var showDeleteConfirmation = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
                 
@@ -29,12 +29,6 @@ struct VoiceNoteSheet: View {
                             showDeleteConfirmation = true
                         }
                     )
-                    .onChange(of: voiceNoteURL) { oldValue, newValue in
-                        // When recording finishes and URL is set, ensure it's saved
-                        if let url = newValue, FileManager.default.fileExists(atPath: url.path) {
-                            // Recording is complete and saved
-                        }
-                    }
                 }
                 .padding()
                 .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
@@ -67,7 +61,6 @@ struct VoiceNoteSheet: View {
                 }
             }
             .preferredColorScheme(.dark)
-            .navigationViewStyle(.stack) // Force single column on iPad
             .alert("DELETE RECORDING?", isPresented: $showDeleteConfirmation) {
                 Button("CANCEL", role: .cancel) { }
                 Button("DELETE", role: .destructive) {

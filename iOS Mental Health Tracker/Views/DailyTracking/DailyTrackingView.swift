@@ -27,10 +27,10 @@ struct DailyTrackingView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
-                
+
                 HStack {
                     Spacer()
                     ScrollView {
@@ -156,12 +156,11 @@ struct DailyTrackingView: View {
             }
             .preferredColorScheme(.dark)
         }
-        .navigationViewStyle(.stack) // Force single column on iPad - must be on NavigationView
         .sheet(isPresented: $showDatePicker) {
-            NavigationView {
+            NavigationStack {
                 ZStack {
                     AppTheme.backgroundColor.ignoresSafeArea()
-                    
+
                     VStack {
                         DatePicker("", selection: $selectedDate, displayedComponents: .date)
                             .datePickerStyle(.wheel)
@@ -169,27 +168,29 @@ struct DailyTrackingView: View {
                             .labelsHidden()
                             .padding()
                     }
-                    .navigationTitle("SELECT DATE")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("DONE") {
-                                showDatePicker = false
-                            }
-                            .font(AppTheme.captionFont)
-                            .foregroundColor(AppTheme.primaryTextColor)
-                        }
-                    }
-                    .preferredColorScheme(.dark)
                 }
+                .navigationTitle("SELECT DATE")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("DONE") {
+                            showDatePicker = false
+                        }
+                        .font(AppTheme.captionFont)
+                        .foregroundColor(AppTheme.primaryTextColor)
+                    }
+                }
+                .preferredColorScheme(.dark)
             }
-            .navigationViewStyle(.stack) // Force single column on iPad
+            .presentationDetents([.medium])
+            .presentationCompactAdaptation(.sheet) // Ensure half-sheet on iPad, not a popover
         }
         .onChange(of: selectedDate) { oldValue, newDate in
             viewModel.loadEntry(for: newDate)
         }
         .sheet(isPresented: $showTextNoteSheet) {
             TextNoteSheet(textNote: $viewModel.textNote)
+                .presentationCompactAdaptation(.sheet) // Ensure sheet on iPad, not a popover
         }
         .sheet(isPresented: $showVoiceNoteSheet) {
             VoiceNoteSheet(
@@ -197,6 +198,7 @@ struct DailyTrackingView: View {
                 voiceNoteURL: $viewModel.voiceNoteURL,
                 voiceNoteDuration: $viewModel.voiceNoteDuration
             )
+            .presentationCompactAdaptation(.sheet) // Ensure sheet on iPad, not a popover
         }
     }
     
