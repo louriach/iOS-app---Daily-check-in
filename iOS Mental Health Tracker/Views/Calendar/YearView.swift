@@ -240,25 +240,26 @@ struct YearDot: View {
             onTap(date)
         }) {
             ZStack {
-                Circle()
-                    .fill(
-                        moodState?.color ?? AppTheme.borderColor
-                    )
-                    .frame(width: dotSize, height: dotSize)
-                
+                // Subtle background for today / selected
+                if isToday {
+                    RoundedRectangle(cornerRadius: dotSize * 0.2)
+                        .fill(AppTheme.accentColor.opacity(0.15))
+                } else if isSelected {
+                    RoundedRectangle(cornerRadius: dotSize * 0.2)
+                        .fill(AppTheme.primaryTextColor.opacity(0.08))
+                }
+
                 Text("\(dayOfYear)")
-                    .font(AppTheme.captionFont)
-                    .foregroundColor(AppTheme.backgroundColor)
+                    .font(.system(size: dotSize * 0.38, design: .monospaced)
+                        .weight(isToday ? .semibold : .regular))
+                    .foregroundColor(
+                        isToday    ? AppTheme.accentColor :
+                        moodState != nil ? moodState!.color :
+                                     AppTheme.borderColor
+                    )
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
             }
-            .overlay(
-                Circle()
-                    .stroke(
-                        isToday ? AppTheme.accentColor : (isSelected ? AppTheme.primaryTextColor : Color.clear),
-                        lineWidth: isToday ? 2 : 1
-                    )
-            )
         }
         .buttonStyle(.plain)
     }
