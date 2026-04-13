@@ -36,18 +36,11 @@ struct DailyTrackingView: View {
                     ScrollView {
                         VStack(spacing: 40) {
                             Spacer()
-                            
-                            // Date header - centered
-                            VStack(spacing: 8) {
-                                Text("\(dateFormatter.string(from: selectedDate)).")
-                                    .font(.system(size: 16, design: .monospaced))
-                                    .foregroundColor(AppTheme.secondaryTextColor)
-                                
-                                Text("How are you feeling?")
-                                    .font(.system(size: 24, design: .monospaced))
-                                    .foregroundColor(AppTheme.primaryTextColor)
-                            }
-                            .padding(.horizontal)
+
+                            Text("How are you feeling?")
+                                .font(AppTheme.headingFont)
+                                .foregroundColor(AppTheme.primaryTextColor)
+                                .padding(.horizontal)
                             
                             // Mood selection - full width, vertical stack
                             TrafficLightView(
@@ -106,21 +99,20 @@ struct DailyTrackingView: View {
                                     selectedTab = 1
                                 }) {
                                     Text("Log today's mood")
-                                        .font(AppTheme.captionFont)
+                                        .font(AppTheme.font)
                                         .foregroundColor(AppTheme.primaryTextColor)
-                                        .tracking(2)
                                         .padding(.horizontal, 16)
                                         .padding(.vertical, 20)
                                         .frame(maxWidth: .infinity)
                                         .background(
                                             ZStack {
-                                                RoundedRectangle(cornerRadius: 24)
+                                                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                                     .fill(AppTheme.surfaceColor)
                                                 if let mood = viewModel.selectedMood {
-                                                    RoundedRectangle(cornerRadius: 24)
+                                                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                                         .fill(mood.lightTint)
                                                 }
-                                                RoundedRectangle(cornerRadius: 24)
+                                                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                                     .stroke(viewModel.selectedMood?.mediumTint ?? AppTheme.borderColor, lineWidth: 1)
                                             }
                                         )
@@ -139,7 +131,7 @@ struct DailyTrackingView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text(dateFormatter.string(from: selectedDate).uppercased())
+                    Text(dateFormatter.string(from: selectedDate))
                         .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.secondaryTextColor)
                 }
@@ -169,11 +161,11 @@ struct DailyTrackingView: View {
                             .padding()
                     }
                 }
-                .navigationTitle("SELECT DATE")
+                .navigationTitle("Select date")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button("DONE") {
+                        Button("Done") {
                             showDatePicker = false
                         }
                         .font(AppTheme.captionFont)

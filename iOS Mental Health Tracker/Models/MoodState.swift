@@ -28,12 +28,9 @@ enum MoodState: String, CaseIterable, Identifiable {
     
     var color: Color {
         switch self {
-        case .red:
-            return Color(red: 0.75, green: 0.4, blue: 0.4)  // Desaturated red
-        case .yellow:
-            return Color(red: 0.7, green: 0.65, blue: 0.4)   // Desaturated yellow/amber
-        case .green:
-            return Color(red: 0.4, green: 0.65, blue: 0.5)  // Desaturated green
+        case .red: return AppTheme.moodRed
+        case .yellow: return AppTheme.moodYellow
+        case .green: return AppTheme.moodGreen
         }
     }
     
@@ -50,24 +47,18 @@ enum MoodState: String, CaseIterable, Identifiable {
     // Border color for unpressed state
     var borderColor: Color {
         switch self {
-        case .red:
-            return Color(hex: "6D3738")
-        case .yellow:
-            return Color(hex: "625935")
-        case .green:
-            return Color(hex: "2F5B45")
+        case .red: return AppTheme.moodRedBorder
+        case .yellow: return AppTheme.moodYellowBorder
+        case .green: return AppTheme.moodGreenBorder
         }
     }
-    
+
     // Text color for unpressed state
     var unpressedTextColor: Color {
         switch self {
-        case .red:
-            return Color(hex: "F52B2F")
-        case .yellow:
-            return Color(hex: "C9A30B")
-        case .green:
-            return Color(hex: "17B968")
+        case .red: return AppTheme.moodRedText
+        case .yellow: return AppTheme.moodYellowText
+        case .green: return AppTheme.moodGreenText
         }
     }
     

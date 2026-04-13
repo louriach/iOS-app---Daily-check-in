@@ -14,7 +14,7 @@ struct CalendarGridView: View {
         NavigationStack {
             YearView(viewModel: viewModel, selectedDate: $viewModel.selectedDate)
                 .background(AppTheme.backgroundColor.ignoresSafeArea())
-                .navigationTitle("CALENDAR")
+                .navigationTitle("Calendar")
                 .preferredColorScheme(.dark)
                 .task {
                     // Load entries asynchronously to prevent blocking
