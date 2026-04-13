@@ -25,7 +25,7 @@ struct YearView: View {
     private let gap: CGFloat = 2
     private let padding: CGFloat = 8
 
-    /// Live scale, clamped between 1× (fit-to-screen) and 8×.
+    /// Live scale clamped to 1× – 8×.
     private var scale: CGFloat {
         (committedScale * gestureScale).clamped(to: 1...8)
     }
@@ -34,15 +34,18 @@ struct YearView: View {
 
     var body: some View {
         GeometryReader { geo in
-            let dotSize  = baseDotSize(in: geo.size) * scale
-            let gridW    = CGFloat(cols) * dotSize + CGFloat(cols - 1) * gap
-            let gridH    = CGFloat(rows) * dotSize + CGFloat(rows - 1) * gap
-            let totalW   = gridW + padding * 2
-            let totalH   = gridH + padding * 2
+            // Separate width / height so the grid fills the full screen at 1×.
+            // Dots will be wide-short pills; as you zoom in they approach square.
+            let baseDotW = baseDotWidth(in: geo.size)
+            let baseDotH = baseDotHeight(in: geo.size)
+            let dotW     = baseDotW * scale
+            let dotH     = baseDotH * scale
+            let totalW   = CGFloat(cols) * dotW + CGFloat(cols - 1) * gap + padding * 2
+            let totalH   = CGFloat(rows) * dotH + CGFloat(rows - 1) * gap + padding * 2
 
             ScrollView([.horizontal, .vertical], showsIndicators: false) {
                 LazyVGrid(
-                    columns: Array(repeating: GridItem(.fixed(dotSize), spacing: gap), count: cols),
+                    columns: Array(repeating: GridItem(.fixed(dotW), spacing: gap), count: cols),
                     spacing: gap
                 ) {
                     ForEach(Array(days.enumerated()), id: \.offset) { _, date in
@@ -50,7 +53,8 @@ struct YearView: View {
                             viewModel: viewModel,
                             date: date,
                             selectedDate: $selectedDate,
-                            dotSize: dotSize,
+                            dotWidth: dotW,
+                            dotHeight: dotH,
                             onTap: { tapped in
                                 selectedEntryDate = tapped
                                 showEntrySheet = true
@@ -59,8 +63,6 @@ struct YearView: View {
                     }
                 }
                 .padding(padding)
-                // Keep the frame at least as large as the viewport so content
-                // stays pinned top-left when it's smaller than the screen.
                 .frame(
                     width:  max(totalW, geo.size.width),
                     height: max(totalH, geo.size.height),
@@ -70,7 +72,6 @@ struct YearView: View {
             .gesture(
                 MagnificationGesture()
                     .updating($gestureScale) { value, state, _ in
-                        // Prevent zooming below 1× regardless of committed scale
                         state = max(1 / committedScale, value)
                     }
                     .onEnded { value in
@@ -121,11 +122,14 @@ struct YearView: View {
 
     // MARK: Helpers
 
-    /// The dot size at which all `rows × cols` dots exactly fill the available area at scale 1×.
-    private func baseDotSize(in size: CGSize) -> CGFloat {
-        let w = (size.width  - padding * 2 - gap * CGFloat(cols - 1)) / CGFloat(cols)
-        let h = (size.height - padding * 2 - gap * CGFloat(rows - 1)) / CGFloat(rows)
-        return max(1, min(w, h))
+    /// Dot width that makes 7 columns fill the available screen width exactly.
+    private func baseDotWidth(in size: CGSize) -> CGFloat {
+        max(1, (size.width - padding * 2 - gap * CGFloat(cols - 1)) / CGFloat(cols))
+    }
+
+    /// Dot height that makes 53 rows fill the available screen height exactly.
+    private func baseDotHeight(in size: CGSize) -> CGFloat {
+        max(1, (size.height - padding * 2 - gap * CGFloat(rows - 1)) / CGFloat(rows))
     }
 
     private func allDays(in year: Int) -> [Date] {
@@ -143,7 +147,8 @@ struct YearDot: View {
     @ObservedObject var viewModel: CalendarViewModel
     let date: Date
     @Binding var selectedDate: Date
-    let dotSize: CGFloat
+    let dotWidth: CGFloat
+    let dotHeight: CGFloat
     let onTap: (Date) -> Void
 
     private let calendar = Calendar.current
@@ -153,20 +158,22 @@ struct YearDot: View {
     }
 
     var body: some View {
-        let moodState = viewModel.getMoodState(for: date)
+        let moodState  = viewModel.getMoodState(for: date)
         let isSelected = calendar.isDate(date, inSameDayAs: selectedDate)
         let isToday    = calendar.isDateInToday(date)
+        // Pill: fully rounded on the short axis, fills the wide axis.
+        let radius     = dotHeight / 2
 
         Button {
             selectedDate = date
             onTap(date)
         } label: {
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: radius)
                     .fill(moodState?.color ?? AppTheme.borderColor)
 
-                // Only render the label once dots are large enough to read
-                if dotSize >= 14 {
+                // Day number only readable once zoomed in enough
+                if dotHeight >= 14 {
                     Text("\(dayOfYear)")
                         .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.backgroundColor)
@@ -175,7 +182,7 @@ struct YearDot: View {
                 }
             }
             .overlay(
-                Circle().stroke(
+                RoundedRectangle(cornerRadius: radius).stroke(
                     isToday    ? AppTheme.accentColor      :
                     isSelected ? AppTheme.primaryTextColor :
                                  Color.clear,
@@ -184,7 +191,7 @@ struct YearDot: View {
             )
         }
         .buttonStyle(.plain)
-        .frame(width: dotSize, height: dotSize)
+        .frame(width: dotWidth, height: dotHeight)
     }
 }
 
@@ -204,26 +211,18 @@ struct YearEntrySheet: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var audioService = AudioRecordingService()
 
-    private let calendar = Calendar.current
-
     private let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "EEEE, MMMM d, yyyy"
-        return f
+        let f = DateFormatter(); f.dateFormat = "EEEE, MMMM d, yyyy"; return f
     }()
 
     private let dateTimeFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateStyle = .medium
-        f.timeStyle = .short
-        return f
+        let f = DateFormatter(); f.dateStyle = .medium; f.timeStyle = .short; return f
     }()
 
     var body: some View {
         NavigationStack {
             ZStack {
                 AppTheme.backgroundColor.ignoresSafeArea()
-
                 ScrollView {
                     VStack(spacing: 24) {
                         if let entry = viewModel.getMoodEntry(for: date) {
