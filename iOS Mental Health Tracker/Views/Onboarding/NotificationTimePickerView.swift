@@ -20,10 +20,9 @@ struct NotificationTimePickerView: View {
                 HStack {
                     Spacer()
                     VStack(spacing: 40) {
-                        Text("SET REMINDER TIME")
-                            .font(AppTheme.captionFont)
-                            .foregroundColor(AppTheme.secondaryTextColor)
-                            .tracking(2)
+                        Text("Set a reminder time")
+                            .font(AppTheme.headingFont)
+                            .foregroundColor(AppTheme.primaryTextColor)
                             .multilineTextAlignment(.center)
                             .padding()
                         
@@ -37,17 +36,16 @@ struct NotificationTimePickerView: View {
                         Button(action: {
                             showPermissionSheet = true
                         }) {
-                            Text("CONTINUE")
+                            Text("Continue")
                                 .font(AppTheme.captionFont)
                                 .foregroundColor(AppTheme.primaryTextColor)
-                                .tracking(2)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 4)
+                                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                         .fill(AppTheme.accentColor)
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 4)
+                                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                                 .stroke(AppTheme.borderColor, lineWidth: 1)
                                         )
                                 )
@@ -59,7 +57,7 @@ struct NotificationTimePickerView: View {
                 }
                 .frame(maxWidth: .infinity)
             }
-            .navigationTitle("SETUP")
+            .navigationTitle("Setup")
             .navigationBarTitleDisplayMode(.inline)
             .preferredColorScheme(.dark)
             .frame(maxWidth: .infinity)

@@ -123,18 +123,9 @@ struct YearView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                HStack {
-                    Text("YEAR")
-                        .font(AppTheme.captionFont)
-                        .foregroundColor(AppTheme.primaryTextColor)
-                    
-                    Spacer()
-                    
-                    Text(String(visibleYear))
-                        .font(AppTheme.captionFont)
-                        .foregroundColor(AppTheme.primaryTextColor)
-                }
-                .frame(maxWidth: .infinity)
+                Text(String(visibleYear))
+                    .font(AppTheme.captionFont)
+                    .foregroundColor(AppTheme.primaryTextColor)
             }
         }
         .sheet(isPresented: $showEntrySheet) {
@@ -314,10 +305,9 @@ struct YearEntrySheet: View {
                                         Circle()
                                             .fill(mood.color)
                                             .frame(width: 24, height: 24)
-                                        Text(mood.displayName.uppercased())
-                                            .font(AppTheme.captionFont)
+                                        Text(mood.displayName)
+                                            .font(AppTheme.font)
                                             .foregroundColor(AppTheme.primaryTextColor)
-                                            .tracking(2)
                                     }
                                 }
                                 
@@ -355,11 +345,10 @@ struct YearEntrySheet: View {
                         } else {
                             // No entry screen
                             VStack(spacing: 16) {
-                                Text("NO ENTRY")
-                                    .font(AppTheme.captionFont)
+                                Text("No entry")
+                                    .font(AppTheme.font)
                                     .foregroundColor(AppTheme.secondaryTextColor)
-                                    .tracking(2)
-                                
+
                                 Text(dateFormatter.string(from: date))
                                     .font(AppTheme.captionFont)
                                     .foregroundColor(AppTheme.secondaryTextColor)
@@ -371,11 +360,11 @@ struct YearEntrySheet: View {
                     .padding()
                 }
             }
-            .navigationTitle("ENTRY")
+            .navigationTitle("Entry")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("DONE") {
+                    Button("Done") {
                         audioService.stopPlayback()
                         dismiss()
                     }
@@ -417,13 +406,12 @@ struct VoiceNotePlaybackView: View {
                         Text(String(format: "%.1f", audioService.playbackTime))
                             .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.primaryTextColor)
-                        
-                        Text("PLAYING...")
+
+                        Text("Playing…")
                             .font(AppTheme.captionFont)
                             .foregroundColor(AppTheme.secondaryTextColor)
-                            .tracking(2)
-                        
-                        Button("STOP") {
+
+                        Button("Stop") {
                             audioService.stopPlayback()
                         }
                         .buttonStyle(MinimalButtonStyle())
@@ -434,20 +422,19 @@ struct VoiceNotePlaybackView: View {
                     }) {
                         HStack {
                             Image(systemName: "play.fill")
-                            Text("PLAY")
-                            Text("(\(Int(duration))S)")
+                            Text("Play")
+                            Text("(\(Int(duration))s)")
                                 .foregroundColor(AppTheme.secondaryTextColor)
                         }
                         .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.primaryTextColor)
-                        .tracking(2)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
                                 .fill(AppTheme.surfaceColor)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 4)
+                                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
                                         .stroke(AppTheme.borderColor, lineWidth: 1)
                                 )
                         )
