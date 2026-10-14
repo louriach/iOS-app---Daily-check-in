@@ -8,11 +8,20 @@
 import SwiftUI
 
 struct AppTheme {
-    // Monospaced font - all text uses caption size
-    static let font = Font.system(.caption, design: .monospaced)
-    static let titleFont = Font.system(.caption, design: .monospaced)
-    static let headlineFont = Font.system(.caption, design: .monospaced)
+    // Typography scale
+    static let headingFont = Font.system(.title3, design: .monospaced).weight(.medium)
+    static let font = Font.system(.subheadline, design: .monospaced)
     static let captionFont = Font.system(.caption, design: .monospaced)
+    static let labelFont = Font.system(.caption2, design: .monospaced)
+
+    // Legacy aliases
+    static let titleFont = captionFont
+    static let headlineFont = captionFont
+
+    // Corner radius scale
+    static let cornerRadiusSmall: CGFloat = 10
+    static let cornerRadiusMedium: CGFloat = 14
+    static let cornerRadiusLarge: CGFloat = 20
     
     // Dark mode colors
     static let backgroundColor = Color(red: 0.05, green: 0.05, blue: 0.05)
@@ -26,6 +35,16 @@ struct AppTheme {
     static let moodRed = Color(red: 0.75, green: 0.4, blue: 0.4)
     static let moodYellow = Color(red: 0.7, green: 0.65, blue: 0.4)
     static let moodGreen = Color(red: 0.4, green: 0.65, blue: 0.5)
+
+    // Mood border colors (unpressed state)
+    static let moodRedBorder = Color(hex: "6D3738")
+    static let moodYellowBorder = Color(hex: "625935")
+    static let moodGreenBorder = Color(hex: "2F5B45")
+
+    // Mood text colors (unpressed state)
+    static let moodRedText = Color(hex: "F52B2F")
+    static let moodYellowText = Color(hex: "C9A30B")
+    static let moodGreenText = Color(hex: "17B968")
     
     // Minimal button style
     static let buttonStyle = MinimalButtonStyle()
@@ -34,15 +53,15 @@ struct AppTheme {
 struct MinimalButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(AppTheme.font)
+            .font(AppTheme.captionFont)
             .foregroundColor(AppTheme.primaryTextColor)
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
                     .fill(AppTheme.surfaceColor)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusSmall)
                             .stroke(AppTheme.borderColor, lineWidth: 1)
                     )
             )
@@ -55,10 +74,10 @@ struct MinimalCardStyle: ViewModifier {
         content
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: 8)
+                RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
                     .fill(AppTheme.surfaceColor)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
                             .stroke(AppTheme.borderColor, lineWidth: 1)
                     )
             )

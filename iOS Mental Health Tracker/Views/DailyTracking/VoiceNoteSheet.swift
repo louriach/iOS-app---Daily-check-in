@@ -33,7 +33,7 @@ struct VoiceNoteSheet: View {
                 .padding()
                 .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
             }
-            .navigationTitle("VOICE NOTE")
+            .navigationTitle("Voice note")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 // Delete button in top left (only show if recording exists)
@@ -50,9 +50,9 @@ struct VoiceNoteSheet: View {
                         }
                     }
                 }
-                
+
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("DONE") {
+                    Button("Done") {
                         audioService.stopPlayback()
                         dismiss()
                     }
@@ -61,9 +61,10 @@ struct VoiceNoteSheet: View {
                 }
             }
             .preferredColorScheme(.dark)
-            .alert("DELETE RECORDING?", isPresented: $showDeleteConfirmation) {
-                Button("CANCEL", role: .cancel) { }
-                Button("DELETE", role: .destructive) {
+            .navigationViewStyle(.stack) // Force single column on iPad
+            .alert("Delete recording?", isPresented: $showDeleteConfirmation) {
+                Button("Cancel", role: .cancel) { }
+                Button("Delete", role: .destructive) {
                     if let url = voiceNoteURL {
                         audioService.deleteRecording(url: url)
                         voiceNoteURL = nil
@@ -71,7 +72,7 @@ struct VoiceNoteSheet: View {
                     }
                 }
             } message: {
-                Text("THIS CANNOT BE UNDONE")
+                Text("This can't be undone.")
             }
         }
     }

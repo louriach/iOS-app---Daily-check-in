@@ -36,27 +36,25 @@ struct NotificationPermissionSheet: View {
                     Text("Yes, enable notifications")
                         .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.primaryTextColor)
-                        .tracking(2)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(
-                            RoundedRectangle(cornerRadius: 24)
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                 .fill(AppTheme.surfaceColor)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 24)
+                                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
                                         .stroke(AppTheme.borderColor, lineWidth: 1)
                                 )
                         )
                 }
-                
+
                 Button(action: {
                     isPresented = false
                     onDecline()
                 }) {
-                    Text("No, Skip")
+                    Text("No, skip")
                         .font(AppTheme.captionFont)
                         .foregroundColor(AppTheme.secondaryTextColor)
-                        .tracking(2)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                 }

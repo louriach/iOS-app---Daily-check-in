@@ -19,7 +19,7 @@ struct VoiceRecordingView: View {
     var body: some View {
         VStack(spacing: 32) {
             if !hasPermission {
-                Button("REQUEST PERMISSION") {
+                Button("Enable microphone") {
                     Task {
                         hasPermission = await audioService.requestMicrophonePermission()
                     }
@@ -94,10 +94,9 @@ struct VoiceRecordingView: View {
                     VStack(spacing: 8) {
                         // Always show text element (instruction or duration)
                         if audioService.isRecording {
-                            Text("RELEASE TO STOP")
+                            Text("Release to stop")
                                 .font(AppTheme.captionFont)
                                 .foregroundColor(AppTheme.secondaryTextColor)
-                                .tracking(2)
                                 .onChange(of: audioService.recordingDuration) { oldValue, newValue in
                                     recordingDuration = newValue
                                 }
@@ -117,10 +116,9 @@ struct VoiceRecordingView: View {
                                     .foregroundColor(AppTheme.secondaryTextColor)
                             }
                         } else {
-                            Text("HOLD TO RECORD")
+                            Text("Hold to record")
                                 .font(AppTheme.captionFont)
                                 .foregroundColor(AppTheme.secondaryTextColor)
-                                .tracking(2)
                         }
                         
                         // Reserve space to keep layout consistent (empty when not needed)

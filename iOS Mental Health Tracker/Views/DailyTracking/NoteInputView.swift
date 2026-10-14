@@ -36,13 +36,13 @@ struct NoteInputView: View {
             if noteType == .text {
                 ZStack(alignment: .topLeading) {
                     if textNote.isEmpty {
-                        Text("TYPE YOUR NOTE HERE...")
-                            .font(AppTheme.captionFont)
+                        Text("Type your note here…")
+                            .font(AppTheme.font)
                             .foregroundColor(AppTheme.secondaryTextColor)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 8)
                     }
-                    
+
                     TextEditor(text: $textNote)
                         .font(AppTheme.font)
                         .foregroundColor(AppTheme.primaryTextColor)
@@ -56,11 +56,11 @@ struct NoteInputView: View {
                         }
                 }
                 .overlay(
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
                         .stroke(AppTheme.borderColor, lineWidth: 1)
                 )
                 .background(AppTheme.surfaceColor)
-                .cornerRadius(4)
+                .cornerRadius(AppTheme.cornerRadiusMedium)
                 
                 Text("\(textNote.count)/240")
                     .font(AppTheme.captionFont)

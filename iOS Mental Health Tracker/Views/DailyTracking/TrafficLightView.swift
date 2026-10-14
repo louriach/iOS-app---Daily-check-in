@@ -29,26 +29,22 @@ struct TrafficLightView<NoteButtons: View>: View {
             ForEach(MoodState.allCases.reversed()) { mood in
                 ZStack(alignment: .trailing) {
                     Button(action: {
-                        selectedMood = mood
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedMood = mood
+                        }
                         onSelect(mood)
                     }) {
                         HStack {
                             Text(mood.displayName)
-                                .font(AppTheme.captionFont)
+                                .font(AppTheme.font)
                                 .foregroundColor(mood.unpressedTextColor)
-                            
+
                             Spacer()
-                            
-                            // Always reserve space for icon buttons to maintain consistent sizing
+
                             HStack(spacing: 12) {
-                                Circle()
-                                    .fill(Color.clear)
-                                    .frame(width: 44, height: 44)
-                                Circle()
-                                    .fill(Color.clear)
-                                    .frame(width: 44, height: 44)
+                                Color.clear.frame(width: 44, height: 44)
+                                Color.clear.frame(width: 44, height: 44)
                             }
-                            .padding(.trailing, 16)
                             .opacity(selectedMood == mood ? 1 : 0)
                         }
                         .padding(.horizontal, 16)
@@ -58,11 +54,11 @@ struct TrafficLightView<NoteButtons: View>: View {
                             transaction.animation = nil
                         }
                         .background(
-                            RoundedRectangle(cornerRadius: 24)
-                                .fill(Color.clear)
+                            RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
+                                .fill(selectedMood == mood ? mood.color.opacity(0.08) : Color.clear)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 24)
-                                        .stroke(selectedMood == mood ? mood.unpressedTextColor : mood.borderColor, lineWidth: selectedMood == mood ? 2 : 1)
+                                    RoundedRectangle(cornerRadius: AppTheme.cornerRadiusLarge)
+                                        .stroke(selectedMood == mood ? mood.unpressedTextColor : mood.borderColor, lineWidth: selectedMood == mood ? 1.5 : 1)
                                 )
                         )
                     }

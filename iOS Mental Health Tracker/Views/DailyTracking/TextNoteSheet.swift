@@ -17,22 +17,17 @@ struct TextNoteSheet: View {
                 AppTheme.backgroundColor.ignoresSafeArea()
 
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("TEXT NOTE")
-                        .font(AppTheme.captionFont)
-                        .foregroundColor(AppTheme.secondaryTextColor)
-                        .tracking(2)
-                    
                     ZStack(alignment: .topLeading) {
                         if textNote.isEmpty {
-                            Text("TYPE YOUR NOTE HERE...")
-                                .font(AppTheme.captionFont)
+                            Text("Type your note here…")
+                                .font(AppTheme.font)
                                 .foregroundColor(AppTheme.secondaryTextColor)
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 8)
                         }
-                        
+
                         TextEditor(text: $textNote)
-                            .font(AppTheme.captionFont)
+                            .font(AppTheme.font)
                             .foregroundColor(AppTheme.primaryTextColor)
                             .scrollContentBackground(.hidden)
                             .background(Color.clear)
@@ -44,11 +39,11 @@ struct TextNoteSheet: View {
                     }
                     .frame(minHeight: 200)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: AppTheme.cornerRadiusMedium)
                             .stroke(AppTheme.borderColor, lineWidth: 1)
                     )
                     .background(AppTheme.surfaceColor)
-                    .cornerRadius(4)
+                    .cornerRadius(AppTheme.cornerRadiusMedium)
                     
                     Text("\(textNote.count)/240")
                         .font(AppTheme.captionFont)
@@ -58,11 +53,11 @@ struct TextNoteSheet: View {
                 .padding()
                 .frame(maxWidth: 600) // Center content on iPad, full width on iPhone
             }
-            .navigationTitle("TEXT NOTE")
+            .navigationTitle("Note")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("DONE") {
+                    Button("Done") {
                         dismiss()
                     }
                     .font(AppTheme.captionFont)
