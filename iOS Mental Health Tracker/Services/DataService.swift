@@ -72,6 +72,8 @@ class DataService: ObservableObject {
         
         let request: NSFetchRequest<MoodEntry> = MoodEntry.fetchRequest()
         request.predicate = NSPredicate(format: "date >= %@ AND date < %@", startOfDay as NSDate, endOfDay as NSDate)
+        // If a day has duplicates, return the most recently updated one
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \MoodEntry.updatedAt, ascending: false)]
         request.fetchLimit = 1
         
         return try? viewContext.fetch(request).first

@@ -55,7 +55,9 @@ class DailyTrackingViewModel: ObservableObject {
         // on every app update, making absolute paths stale.
         let voiceURLString = voiceNoteURL?.lastPathComponent
         
-        if let entry = existingEntry {
+        // Re-check the store so logging twice in a day updates the same entry
+        // instead of creating a duplicate
+        if let entry = existingEntry ?? dataService.getMoodEntry(for: date) {
             dataService.updateMoodEntry(
                 entry,
                 moodState: mood,
@@ -64,7 +66,7 @@ class DailyTrackingViewModel: ObservableObject {
                 voiceNoteDuration: voiceNoteDuration > 0 ? voiceNoteDuration : nil
             )
         } else {
-            _ = dataService.createMoodEntry(
+            existingEntry = dataService.createMoodEntry(
                 date: date,
                 moodState: mood,
                 textNote: noteText.isEmpty ? nil : noteText,
