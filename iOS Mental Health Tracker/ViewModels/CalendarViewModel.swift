@@ -49,10 +49,15 @@ class CalendarViewModel: ObservableObject {
     // MARK: - Private
 
     private func rebuildIndex() {
+        // Older builds could save two entries for one day; keep the most recently
+        // updated one rather than trapping on the duplicate key.
         entriesByDay = Dictionary(
-            uniqueKeysWithValues: entries.compactMap { entry in
+            entries.compactMap { entry in
                 guard let date = entry.date else { return nil }
                 return (startOfDay(date), entry)
+            },
+            uniquingKeysWith: { first, second in
+                (first.updatedAt ?? .distantPast) >= (second.updatedAt ?? .distantPast) ? first : second
             }
         )
     }
