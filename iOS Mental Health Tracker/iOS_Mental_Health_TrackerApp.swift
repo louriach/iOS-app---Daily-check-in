@@ -10,6 +10,7 @@ import CoreData
 
 @main
 struct iOS_Mental_Health_TrackerApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     let persistenceController = PersistenceController.shared
 
     var body: some Scene {

@@ -7,20 +7,14 @@
 
 import SwiftUI
 
-struct YearLabelPositionPreference: PreferenceKey {
-    static var defaultValue: [Int: CGFloat] = [:]
-    static func reduce(value: inout [Int: CGFloat], nextValue: () -> [Int: CGFloat]) {
-        value.merge(nextValue()) { (_, new) in new }
-    }
-}
-
 struct YearView: View {
     @ObservedObject var viewModel: CalendarViewModel
     @Binding var selectedDate: Date
     @State private var selectedEntryDate: Date?
     @State private var showEntrySheet = false
     @State private var visibleYear: Int = Calendar.current.component(.year, from: Date())
-    @State private var updateTask: Task<Void, Never>?
+    /// Drives the initial scroll to today and reports the centred header/row id, e.g. "2026-row-41"
+    @State private var scrollPosition = ScrollPosition(idType: String.self)
 
     private let calendar = Calendar.current
     private let columnsPerRow = 7 // Days per week
@@ -47,114 +41,88 @@ struct YearView: View {
             let totalGapWidth = gap * CGFloat(columnsPerRow - 1)
             let dotSize = max(0, (availableWidth - totalGapWidth) / CGFloat(columnsPerRow))
 
-            ScrollViewReader { proxy in
-                ScrollView {
-                    // Lazy and flat (headers and rows are siblings) so only the rows on
-                    // screen are built — 11 years is ~4,000 day cells — and scrollTo can
-                    // reach any row by its id.
-                    LazyVStack(alignment: .leading, spacing: gap) {
-                        ForEach(years, id: \.self) { year in
-                            yearHeader(year, padding: padding)
-                                .padding(.top, year == years.first ? 0 : 48 - gap)
-                                .padding(.bottom, 12 - gap)
-                                .id(year)
+            ScrollView {
+                // Lazy and flat (headers and rows are siblings) so only the rows on
+                // screen are built — 11 years is ~4,000 day cells — and scrollTo can
+                // reach any row by its id.
+                LazyVStack(alignment: .leading, spacing: gap) {
+                    ForEach(years, id: \.self) { year in
+                        yearHeader(year, padding: padding)
+                            .padding(.top, year == years.first ? 0 : 48 - gap)
+                            .padding(.bottom, 12 - gap)
+                            .id("\(year)-header")
 
-                            let days = YearDays.days(in: year)
-                            ForEach(Array(stride(from: 0, to: days.count, by: columnsPerRow)), id: \.self) { rowStart in
-                                let rowEnd = min(rowStart + columnsPerRow, days.count)
+                        let days = YearDays.days(in: year)
+                        ForEach(Array(stride(from: 0, to: days.count, by: columnsPerRow)), id: \.self) { rowStart in
+                            let rowEnd = min(rowStart + columnsPerRow, days.count)
 
-                                HStack(spacing: gap) {
-                                    ForEach(rowStart..<rowEnd, id: \.self) { dayIndex in
-                                        let date = days[dayIndex]
-                                        YearDot(
-                                            date: date,
-                                            dayOfYear: dayIndex + 1,
-                                            moodState: viewModel.getMoodState(for: date),
-                                            isToday: date == today,
-                                            isSelected: date == selectedDay,
-                                            dotSize: dotSize,
-                                            onTap: { date in
-                                                selectedDate = date
-                                                selectedEntryDate = date
-                                                showEntrySheet = true
-                                            }
-                                        )
-                                        .equatable()
-                                        .frame(width: dotSize, height: dotSize)
-                                    }
-
-                                    // Fill remaining cells if row is incomplete
-                                    if rowEnd - rowStart < columnsPerRow {
-                                        ForEach(0..<(columnsPerRow - (rowEnd - rowStart)), id: \.self) { _ in
-                                            Color.clear
-                                                .frame(width: dotSize, height: dotSize)
+                            HStack(spacing: gap) {
+                                ForEach(rowStart..<rowEnd, id: \.self) { dayIndex in
+                                    let date = days[dayIndex]
+                                    YearDot(
+                                        date: date,
+                                        dayOfYear: dayIndex + 1,
+                                        moodState: viewModel.getMoodState(for: date),
+                                        isToday: date == today,
+                                        isSelected: date == selectedDay,
+                                        dotSize: dotSize,
+                                        onTap: { date in
+                                            selectedDate = date
+                                            selectedEntryDate = date
+                                            showEntrySheet = true
                                         }
-                                    }
+                                    )
+                                    .equatable()
+                                    .frame(width: dotSize, height: dotSize)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.horizontal, padding)
-                                .id("\(year)-row-\(rowStart / columnsPerRow)")
-                            }
-                        }
-                    }
-                    .padding(.bottom, 24)
-                    .padding(.vertical, padding)
-                    .onPreferenceChange(YearLabelPositionPreference.self) { yearPositions in
-                        // Find the year whose label has most recently passed the top (threshold)
-                        let threshold: CGFloat = 100
-                        let passedYears = yearPositions.filter { $0.value <= threshold }
 
-                        let newYear: Int?
-                        if let activeYear = passedYears.max(by: { $0.value < $1.value })?.key {
-                            newYear = activeYear
-                        } else if let closestYear = yearPositions.min(by: {
-                            abs($0.value - threshold) < abs($1.value - threshold)
-                        })?.key {
-                            newYear = closestYear
-                        } else {
-                            newYear = nil
-                        }
-
-                        // Update immediately to stay in sync with scroll position
-                        if let newYear = newYear, newYear != visibleYear {
-                            // Cancel any pending update
-                            updateTask?.cancel()
-
-                            // Update immediately on next run loop to prevent blocking
-                            Task { @MainActor in
-                                // Check again in case it changed during the async dispatch
-                                if newYear != visibleYear {
-                                    // Use transaction to prevent animation interference
-                                    var transaction = Transaction()
-                                    transaction.disablesAnimations = true
-                                    withTransaction(transaction) {
-                                        visibleYear = newYear
+                                // Fill remaining cells if row is incomplete
+                                if rowEnd - rowStart < columnsPerRow {
+                                    ForEach(0..<(columnsPerRow - (rowEnd - rowStart)), id: \.self) { _ in
+                                        Color.clear
+                                            .frame(width: dotSize, height: dotSize)
                                     }
                                 }
                             }
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, padding)
+                            .id("\(year)-row-\(rowStart / columnsPerRow)")
                         }
                     }
                 }
-                .coordinateSpace(name: "scroll")
-                .task {
-                    // Defer scroll animation slightly to allow initial render to complete
-                    try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
+                .scrollTargetLayout()
+                .padding(.bottom, 24)
+                .padding(.vertical, padding)
+            }
+            // Track the centred header/row rather than header positions: the lazy
+            // stack discards off-screen headers, so their positions go stale.
+            .scrollPosition($scrollPosition, anchor: .center)
+            .onChange(of: scrollPosition.viewID(type: String.self)) { _, id in
+                guard let id, let year = Int(id.prefix { $0 != "-" }), year != visibleYear else { return }
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    visibleYear = year
+                }
+            }
+            .task {
+                // Defer scroll animation slightly to allow initial render to complete
+                try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
 
-                    // Scroll to center around today's date
-                    let today = Date()
-                    let currentYear = calendar.component(.year, from: today)
-                    visibleYear = currentYear
+                // Scroll to center around today's date
+                let today = Date()
+                let currentYear = calendar.component(.year, from: today)
+                visibleYear = currentYear
 
-                    // Calculate day of year (1-indexed, then convert to 0-indexed)
-                    let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 1
-                    let dayIndex = dayOfYear - 1 // Convert to 0-indexed
-                    // Calculate which row this day is in (0-indexed, 7 days per row)
-                    let rowIndex = dayIndex / 7
-                    let rowID = "\(currentYear)-row-\(rowIndex)"
+                // Calculate day of year (1-indexed, then convert to 0-indexed)
+                let dayOfYear = calendar.ordinality(of: .day, in: .year, for: today) ?? 1
+                let dayIndex = dayOfYear - 1 // Convert to 0-indexed
+                // Calculate which row this day is in (0-indexed, 7 days per row)
+                let rowIndex = dayIndex / 7
+                let rowID = "\(currentYear)-row-\(rowIndex)"
 
-                    withAnimation(.easeOut(duration: 0.3)) {
-                        proxy.scrollTo(rowID, anchor: .center)
-                    }
+                withAnimation(.easeOut(duration: 0.3)) {
+                    scrollPosition.scrollTo(id: rowID, anchor: .center)
                 }
             }
         }
@@ -181,12 +149,6 @@ struct YearView: View {
                 .foregroundColor(AppTheme.primaryTextColor)
         }
         .padding(.horizontal, padding)
-        .background(
-            GeometryReader { geometry in
-                Color.clear
-                    .preference(key: YearLabelPositionPreference.self, value: [year: geometry.frame(in: .named("scroll")).minY])
-            }
-        )
     }
 }
 
