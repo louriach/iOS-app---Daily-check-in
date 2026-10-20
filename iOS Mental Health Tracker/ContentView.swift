@@ -13,7 +13,8 @@ struct ContentView: View {
     @StateObject private var notificationSettings = NotificationSettings()
     @State private var selectedTab = 0
     @State private var calendarViewModel: CalendarViewModel?
-    
+    @ObservedObject private var router = AppRouter.shared
+
     private var dataService: DataService {
         DataService(viewContext: viewContext)
     }
@@ -38,7 +39,11 @@ struct ContentView: View {
                             .help("Check-In")
                             .tag(0)
                             
-                            CalendarGridView(viewModel: calendarVM)
+                            CalendarGridView(
+                                viewModel: calendarVM,
+                                showStats: $router.showStats,
+                                statsYear: $router.statsYear
+                            )
                                 .tabItem {
                                     Image(systemName: "calendar")
                                 }
@@ -47,6 +52,12 @@ struct ContentView: View {
                             .tag(1)
                         }
                         .tint(AppTheme.primaryTextColor)
+                        .onChange(of: router.showStats, initial: true) { _, showStats in
+                            // The stats panel lives on the calendar tab (e.g. opened from a notification)
+                            if showStats {
+                                selectedTab = 1
+                            }
+                        }
                         .onAppear {
                             // Customize tab bar appearance for unselected icons
                             let appearance = UITabBarAppearance()
@@ -76,6 +87,7 @@ struct ContentView: View {
         .onAppear {
             if notificationSettings.hasCompletedOnboarding {
                 NotificationService.shared.scheduleDailyNotification(at: notificationSettings.notificationTime)
+                NotificationService.shared.scheduleYearInReviewNotification()
             }
         }
         .task {
