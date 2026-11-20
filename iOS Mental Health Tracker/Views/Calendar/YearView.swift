@@ -197,22 +197,24 @@ struct YearDot: View, Equatable {
             onTap(date)
         }) {
             ZStack {
-                // Subtle background for today / selected
-                if isToday {
-                    RoundedRectangle(cornerRadius: dotSize * 0.2)
-                        .fill(AppTheme.accentColor.opacity(0.15))
-                } else if isSelected {
+                // Today and the selected day are marked in neutral tones, so the
+                // number's colour only ever means the logged mood (the green accent
+                // used to make today look like "Good" whatever was logged).
+                if isSelected {
                     RoundedRectangle(cornerRadius: dotSize * 0.2)
                         .fill(AppTheme.primaryTextColor.opacity(0.08))
+                }
+                if isToday {
+                    RoundedRectangle(cornerRadius: dotSize * 0.2)
+                        .stroke(AppTheme.secondaryTextColor.opacity(0.6), lineWidth: 1)
                 }
 
                 Text("\(dayOfYear)")
                     .font(.system(size: dotSize * 0.38, design: .monospaced)
                         .weight(isToday ? .semibold : .regular))
                     .foregroundColor(
-                        isToday    ? AppTheme.accentColor :
-                        moodState != nil ? moodState!.color :
-                                     AppTheme.borderColor
+                        moodState?.color ??
+                        (isToday ? AppTheme.secondaryTextColor : AppTheme.borderColor)
                     )
                     .minimumScaleFactor(0.5)
                     .lineLimit(1)
